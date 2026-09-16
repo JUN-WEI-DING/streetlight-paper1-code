@@ -8,8 +8,8 @@ URL or access-on-request promise is made.
 ## What is included
 
 The selection is executable in `scripts/release/build_local_data_bundle.py`.
-The initial package contains 175 source files, 405,273,483 uncompressed bytes
-(386.5 MiB), approximately 74.1 MiB gzip-compressed. `bundle.json` records source
+The package contains 179 source files, 405,337,211 uncompressed bytes
+(386.6 MiB), approximately 74.1 MiB gzip-compressed. `bundle.json` records source
 commit, original relative paths, sizes and SHA-256 hashes. The accompanying
 `.sha256` verifies the archive. No raw satellite stores, raw download Parquet,
 licensed process database exports, manuscript, reviews, or credentials are
@@ -24,7 +24,7 @@ provenance; these are not runtime paths.
 | County boundaries, 2024 municipal population | Solar-zenith locations and population weighting |
 | 14 NASA POWER meteorology responses | Offline PVWatts comparison; full 2024 hourly UTC weather |
 | Baseline 4,500-design × 22-city panel and compact scenario products | Capacity reselection and downstream analysis without rerunning every sweep |
-| 13 numerical figure tables and cogeneration sensitivity table | Frozen upstream evidence for supplemental summaries |
+| 13 numerical figure tables and allocation-sensitivity results | Quick-mode intermediates; regenerated in full mode |
 | Three final JSON snapshots | Expected answers, kept exclusively under `reference/` |
 
 Weekly/long-format PAR duplicates, alternate scenarios' large candidate panels,
@@ -102,8 +102,8 @@ uv run --locked python scripts/analysis/reproduce_from_bundle.py \
 ```
 
 This mode leaves bundled analysis results and figure tables exclusively under
-`reference/`. It stages processed inputs, geometry, weather and the explicitly
-identified historical QA table. It reruns the full capacity search, alternative
+`reference/`. It stages processed inputs, geometry and weather. It reruns the full
+capacity search, the 16-case fuel-allocation sensitivity, alternative
 methods, future static grid states, sensitivities, economic analyses, PV
 comparison and conditional uncertainty; it rebuilds all 13 numerical figure
 source tables. Numerical JSON outputs, all bundled result CSVs and all figure
@@ -131,56 +131,55 @@ regenerated outputs without repeating the calculations.
 
 ### Verification result
 
-The isolated suite run recomputed 99,000 baseline design/city rows. All 8,829
-checked final JSON numerical fields and all 13 numerical figure tables agree
-with the reference bundle. All 75 figure/result CSV comparisons pass at
-`rtol=atol=1e-8`. The suite took approximately 13 minutes on the author's
-workstation; downstream PV, uncertainty and comparison work is additional.
+The isolated validation recomputed 99,000 baseline design/city rows in the
+previous full-suite run. The new baseline-plus-16 allocation stage was then
+independently executed in that isolated checkout, followed by rebuilding the
+final value object. Unchanged stages retain the prior verified outputs; the
+whole suite was not rerun for this addition. All 8,859 numerical fields across
+the three final JSONs and allocation summary, and all 79 figure/result CSVs
+(including 13 numerical figure tables), agree at `rtol=atol=1e-8`. All 179
+bundled files passed their size and SHA-256 checks. The suite manifest records
+the separate allocation run; reported cumulative timing includes both runs.
 
 The calibration-robustness entry converts timedeltas explicitly to hours, with
 tests for nanosecond and microsecond timestamp storage. Its
 `mean_annual_lighting_hours` values are 4408.6212–4545.3030 hours; raw datetime
 integers must not be divided by a presumed nanosecond conversion constant.
 This correction is synchronized to the canonical research code and regenerated
-reference table. The bundle records research commit
-`52e22c5` (full identity in `bundle.json`). The final manuscript-value objects
-and Word manuscripts were unchanged. Passing numerical comparison does not
-remove the historical sensitivity exception below.
+reference table. The bundle records the exact research commit in `bundle.json`.
+The allocation calculation below updates the final SI sensitivity row and its
+reviewer-response explanation; the main manuscript remains unchanged.
 
-### Historical allocation-sensitivity exception
+### Reproducible allocation sensitivity
 
-`outputs/qa/cogen_biomass_sensitivity.csv` is a frozen eight-scenario,
-five-region QA analysis. Its regional mean AEF values were stored to four decimal
-places. Current EIAR SI Table S18 (last row) uses its -0.48 / +0.03%
-AEF range, and the value builder recalculates
-that range from the table. No producer was found in the inspected current or
-retired analysis scripts. Git history identifies the table as an imported release
-artifact, without a producer linked alongside it. Current processed
-inputs use seven reporting regions and revised regional allocation assumptions.
-Recomputing an analysis on those inputs would be a new sensitivity result, not
-proof that this historical table was reproduced. Both replay modes retain this
-explicit frozen exception. Do not describe either as recomputing every SI
-experiment, even when numerical comparison passes. Resolving it requires the
-original producer/input version, or an author-reviewed replacement analysis and
-corresponding SI/reviewer-response update.
+`scripts/analysis/run_allocation_sensitivity.py` replaces the historical,
+rounded five-region QA summary with an explicitly specified calculation on the
+current seven-region inputs. It evaluates a baseline plus 16 one-at-a-time cases:
+two fuels, four mainland regions, and relative share changes of -20%/+20%.
+For target region r, s'_r = (1 +/- 0.2)s_r; other mainland shares become
+s'_j = s_j(1 - s'_r)/(1 - s_r). Only each fuel's `-_other_allocated`
+columns change. The national fuel total is conserved at every timestamp;
+named generation, island inputs, transfer inputs, and storage settings remain fixed.
 
-Proposed replacement, pending author review: baseline plus 16 one-at-a-time
-cases (two fuels, four mainland regions, relative share changes of -20%/+20%).
-For perturbed region r, set s'_r = (1 +/- 0.2)s_r and scale other mainland shares
-by (1 - s'_r)/(1 - s_r). Change only each fuel's `-_other_allocated` columns;
-retain all named generation and all island inputs. Current baseline shares come
-from the processed generation-quality report, using purchased-power capacity
-for cogeneration and regional load shares for biomass. Conserve each fuel's
-national total at every timestamp and retain the baseline valid sample.
-Recompute AEF with the existing storage/transfer treatment, then evaluate the
-fixed selected design with the original zero-SOC convention. Report regional
-AEF changes, seven-region panel mean, equal-municipality operational abatement,
-and exact fixed-cost MAC changes. The share range is a deterministic accounting
-stress test, not a confidence interval or a balanced physical grid forecast;
-retain and report regional balance residuals with observed transfers held fixed.
-Only Table S18's last row and its directly related explanation/response would
-be updated after review. This addresses traceability in R2C14 and informs
-R1C5/R2C7, without claiming to supply a probabilistic regional-AEF model.
+Each regional baseline AEF series is checked against its frozen reference before
+scenario evaluation. The AEF summary uses the equal mean across seven regions
+at common valid timestamps. Original selected capacities, zero-SOC dispatch,
+costs and operational comparator are retained; operational abatement is the
+equal-municipality mean, and MAC is fixed mean incremental cost divided by actual
+scenario mean abatement. The last row of EIAR Table S18 reports independently
+selected minima/maxima across cases, not a lower/higher-input pair. Other S18
+screening rows retain their first-order MAC convention.
+
+The calculation writes `scenario_summary.csv`, `regional_summary.csv`,
+`city_results.csv`, `allocation_shares.csv`, and `summary.json` under
+`outputs/final_runs/paper1_canonical_results/allocation_sensitivity/`.
+The regional diagnostic reports changes in power-balance residuals with transfer
+inputs fixed; absolute residuals cannot be reconstructed without regional load
+observations. This is a deterministic accounting stress test, not a balanced
+physical-grid forecast, confidence interval, or probabilistic AEF error model.
+The historical `outputs/qa/cogen_biomass_sensitivity.csv` is no longer consumed
+or bundled. Quick replay uses the new scenario results as intermediates; full
+mode recalculates them and compares every output CSV and numerical summary field.
 
 The optional wind-classification path is absent in the source snapshot. Preserve
 the calculator's existing prefix fallback when comparing with reference results;

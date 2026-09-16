@@ -26,6 +26,7 @@ from typing import Callable
 
 from build_manuscript_results_snapshot import main as build_manuscript_results_snapshot
 from paper1_provenance import repo_display_path
+from run_allocation_sensitivity import main as run_allocation_sensitivity
 from run_calibration_robustness import main as run_calibration_robustness
 from run_carbon_payback_time import main as run_carbon_payback_time
 from run_closing_analyses import main as run_closing_analyses
@@ -72,6 +73,7 @@ def main(*, start_at: str | None = None) -> None:
     #    required by Figure 2 and archive/readiness checks.
     steps: list[tuple[str, Callable[[], None]]] = [
         ("paper_baseline", run_paper_baseline),
+        ("allocation_sensitivity", lambda: run_allocation_sensitivity([])),
         ("calibration_robustness", run_calibration_robustness),
         ("method_simplifications", run_method_simplifications),
         ("closing_analyses", run_closing_analyses),

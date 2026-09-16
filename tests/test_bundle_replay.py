@@ -72,7 +72,7 @@ def test_full_stage_keeps_results_as_references_only(tmp_path, monkeypatch):
     assert not (root / replay.RESULTS).exists()
     assert not (root / 'outputs/paper_assets').exists()
     assert (root / paths[2]).exists()
-    assert (root / paths[3]).exists()  # Explicit historical QA exception.
+    assert not (root / paths[3]).exists()  # Older bundles cannot preload historical QA.
 
 
 def test_full_rerun_rejects_staged_old_intermediates(tmp_path, monkeypatch):
@@ -80,3 +80,30 @@ def test_full_rerun_rejects_staged_old_intermediates(tmp_path, monkeypatch):
     monkeypatch.setattr(replay, 'ROOT', tmp_path)
     with pytest.raises(FileExistsError, match='absent analysis outputs'):
         replay.replay(full=True)
+
+
+def test_full_verification_checks_allocation_summary_and_tables(tmp_path, monkeypatch):
+    import json
+    monkeypatch.setattr(replay, 'ROOT', tmp_path)
+    monkeypatch.setattr(replay, 'run', lambda *args: None)
+    for prefix in ('reference', ''):
+        results = tmp_path / prefix / replay.RESULTS
+        (results / 'allocation_sensitivity').mkdir(parents=True)
+        for name in replay.FINALS:
+            (results / name).write_text('{"value": 1.0}')
+        (results / 'allocation_sensitivity/summary.json').write_text('{"max_mac_change_pct": 2.0}')
+        (results / 'allocation_sensitivity/scenario_summary.csv').write_text('scenario,abatement\nbaseline,4.5\n')
+    (tmp_path / replay.RESULTS / 'paper1_suite_manifest.json').write_text('{"steps": []}')
+    replay.verify(full=True)
+    report_path = tmp_path / 'outputs/reproduction/verification.json'
+    report = json.loads(report_path.read_text())
+    assert report['passed']
+    assert report['documented_suite_from_processed_inputs']
+    assert not report['all_manuscript_experiments_rebuilt']
+    assert report['frozen_analysis_inputs'] == []
+    assert report['checks']['allocation_sensitivity/summary.json']['numeric_values_checked'] == 1
+    assert report['table_checks']['allocation_sensitivity/scenario_summary.csv']['passed']
+    (tmp_path / replay.RESULTS / 'allocation_sensitivity/summary.json').write_text('{"max_mac_change_pct": 3.0}')
+    with pytest.raises(SystemExit):
+        replay.verify(full=True)
+    assert not json.loads(report_path.read_text())['passed']

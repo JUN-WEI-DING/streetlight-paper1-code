@@ -1011,7 +1011,7 @@ def build_values(
     subjective = _read_csv(results_dir / "subjective_sensitivity" / "summary.csv")
     uncertainty_metadata = _read_json(results_dir / "probabilistic_uncertainty" / "metadata.json")
     uncertainty_samples = _read_csv(figure_data_dir / "f8_monte_carlo_uncertainty_samples.csv")
-    cogen_biomass = _read_csv(ROOT / "outputs" / "qa" / "cogen_biomass_sensitivity.csv")
+    allocation = _read_csv(results_dir / "allocation_sensitivity" / "scenario_summary.csv")
     global_config = _read_yaml(ROOT / "config" / "config.yaml")
 
     observed_city_count = int(f4["city"].nunique())
@@ -1880,29 +1880,32 @@ def build_values(
         "macc_response_low_input_pct": -phs_low,
         "macc_response_high_input_pct": -phs_high,
     }
-    cogen_means = cogen_biomass.groupby("scenario")["final_aef_mean"].mean()
-    cogen_baseline = float(cogen_means["baseline"])
-    cogen_deltas = [
-        _pct_delta(value, cogen_baseline)
-        for scenario, value in cogen_means.items()
-        if str(scenario) != "baseline"
-    ]
-    cogen_low = min(cogen_deltas)
-    cogen_high = max(cogen_deltas)
-    s10b_rows.append(
-        _md_table_row(
-            [
-                "Cogeneration/biomass regional-allocation sensitivity range",
-                _fmt_response_pair(cogen_low, cogen_high, 2),
-                _fmt_response_pair(-cogen_low, -cogen_high, 2),
-            ]
-        )
-    )
+    allocation_cases = allocation[allocation["scenario"] != "baseline"]
+    if len(allocation_cases) != 16 or allocation_cases["scenario"].nunique() != 16:
+        raise ValueError("Expected 16 deterministic fuel-allocation scenarios")
+    allocation_ranges = {
+        metric: {"min": float(allocation_cases[metric].min()),
+                 "max": float(allocation_cases[metric].max())}
+        for metric in ("panel_aef_change_pct", "abatement_change_pct", "mac_change_pct")
+    }
+    aef_range = allocation_ranges["panel_aef_change_pct"]
+    mac_range = allocation_ranges["mac_change_pct"]
+    s10b_rows.append(_md_table_row([
+        "Cogeneration/biomass allocation (minimum / maximum across 16 cases)",
+        _fmt_response_pair(aef_range["min"], aef_range["max"], 3),
+        _fmt_response_pair(mac_range["min"], mac_range["max"], 3),
+    ]))
     s10b_values["Cogeneration/biomass regional-allocation sensitivity range"] = {
-        "aef_response_low_pct": cogen_low,
-        "aef_response_high_pct": cogen_high,
-        "macc_response_low_pct": -cogen_low,
-        "macc_response_high_pct": -cogen_high,
+        "aef_response_min_pct": aef_range["min"],
+        "aef_response_max_pct": aef_range["max"],
+        "abatement_response_min_pct": allocation_ranges["abatement_change_pct"]["min"],
+        "abatement_response_max_pct": allocation_ranges["abatement_change_pct"]["max"],
+        "macc_response_min_pct": mac_range["min"],
+        "macc_response_max_pct": mac_range["max"],
+        "scenario_count": 16,
+        "relative_share_change": 0.2,
+        "source": "allocation_sensitivity/scenario_summary.csv",
+        "interpretation": "Independent extrema across deterministic scenarios, not lower/higher-input pairs or confidence intervals; MAC uses actual operational abatement at fixed cost.",
     }
     blocks["table.s10b_rows"] = "\n".join(s10b_rows)
     uniform_fuel_perturbation_pct = _subjective_factor_perturb_pct(

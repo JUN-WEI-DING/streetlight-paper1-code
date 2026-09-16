@@ -3,7 +3,8 @@
 Quick replay starts at frozen scenario intermediates, not at raw observations.
 It recomputes the base value analyses, PV dispatch comparison, and conditional
 uncertainty, then compares numerical outputs with immutable reference answers.
-Use --full to rerun the suite; the historical allocation QA table stays frozen.
+Use --full to rerun the documented numerical suite from processed inputs.
+This scope does not include every manuscript experiment or raw-data preparation.
 """
 from __future__ import annotations
 import argparse
@@ -46,7 +47,8 @@ def stage(archive, *, full=False):
             raise ValueError(f'Checksum mismatch: {source}')
         if (row['role'] == 'expected_answer' or (full and (
                 relative.is_relative_to(RESULTS) or
-                relative.is_relative_to('outputs/paper_assets')))):
+                relative.is_relative_to('outputs/paper_assets') or
+                relative.is_relative_to('outputs/qa')))):
             continue
         target = ROOT / relative
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -122,7 +124,8 @@ def replay(*, full=False, run_suite=True):
 
 def verify(*, full=False):
     checks, failures = {}, []
-    for name in sorted(FINALS):
+    json_names = sorted(FINALS) + (['allocation_sensitivity/summary.json'] if full else [])
+    for name in json_names:
         expected = json.loads((ROOT / 'reference' / RESULTS / name).read_text())
         actual = json.loads((ROOT / RESULTS / name).read_text())
         errors, count = compare_numeric(expected, actual)
@@ -157,10 +160,11 @@ def verify(*, full=False):
                 table_checks[key] = {'passed': False, 'difference': str(error)}
                 failures.append(f'Table differs or missing: {key}')
     run('plot_reproduction_results.py')
-    report = {'scope': ('Analysis-suite rerun from processed inputs; historic cogeneration allocation QA table remains frozen'
+    report = {'scope': ('Documented numerical suite rerun from processed inputs; excludes raw-data preparation and other manuscript experiments'
                         if full else 'Replay from frozen scenario intermediates; PV dispatch is recalculated from processed time series'),
-              'complete_from_processed_inputs': False,
-              'frozen_analysis_inputs': ['outputs/qa/cogen_biomass_sensitivity.csv'] if full else ['scenario intermediates'],
+              'documented_suite_from_processed_inputs': full,
+              'all_manuscript_experiments_rebuilt': False,
+              'frozen_analysis_inputs': [] if full else ['scenario intermediates'],
               'rtol': 1e-8, 'atol': 1e-8, 'checks': checks, 'table_checks': table_checks,
               'passed': not failures}
     if full:

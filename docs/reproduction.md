@@ -80,6 +80,7 @@ changing manuscript table numbers.
 | Calibration checks | `calibrate_par_to_kw_factor.py`, `run_calibration_robustness.py` | PAR, geometry, baseline |
 | Method simplifications | `run_method_simplifications.py` | baseline, PAR, AEF |
 | Future static grid states | `run_future_grid_scenarios.py` | baseline, regional power |
+| Regional allocation sensitivity | `run_allocation_sensitivity.py` | regional power, PAR/AEF, geometry, selected baseline design |
 | One-way/fuel/storage sensitivities | `run_paper_sensitivity.py`, `run_subjective_sensitivity.py` | baseline, power for fuel/storage cases |
 | Degradation and payback | `run_degradation_sensitivity.py`, `run_carbon_payback_time.py` | selected designs and baseline |
 | Economic and marginal alternatives | `run_marginal_cost_economic_lens.py`, `run_merit_order_marginal_carbon.py` | baseline and generation inputs |
@@ -127,9 +128,9 @@ Tests cover synthetic AEF/storage/flow, timestamp adapters, quality checks, PV
 interfaces, regression, selection geometry, replacement accounting, dispatch,
 discounting, and cost sampling. Private result-snapshot and manuscript tests are
 excluded. Export verification compares the source and export using identical
-artificial inputs and checks byte identity of package files. A full capacity/scenario sweep rerun is not part of this validation. The local
-bundle replay additionally recomputes selected-design Taiwan dispatch, PV
-comparisons, downstream SI calculations, and numerical audits; details below.
+artificial inputs and checks byte identity of package files. The synthetic validation does not establish agreement with study results.
+The separate processed-input validation reruns the documented capacity/scenario
+suite and downstream analyses; see `docs/data-bundle.md` for scope and results.
 
 Validated on Python 3.12.3 with the checked-in lockfile: 111 tests passed. All
 package and analysis modules imported, six CLI help commands completed, and a
@@ -137,8 +138,11 @@ small synthetic Zarr dataset round-tripped successfully. Original/export
 outputs matched for dispatch, an eight-row capacity sweep, hardware LCA, and
 regression on identical artificial inputs.
 
-The processed-data replay compared 8,829 numerical values with the reference
-JSONs at relative/absolute tolerances of 1e-8, with no differences. Frozen
-scenario intermediates remain inputs. All 175 bundled files passed SHA-256
-verification. Expected final answers were absent from working paths before
-calculation. See `docs/data-bundle.md` for the six-figure numerical mapping.
+The isolated processed-input validation compared 8,859 numerical values and
+79 figure/result CSVs with the current reference bundle at relative/absolute
+tolerances of 1e-8, with no differences. This combines the previously verified
+full-suite run with a separate rerun of the new allocation stage and final value
+builder; unchanged stages were not repeated. All 179 bundled files passed
+SHA-256 verification. Reference answers are kept separate from working outputs.
+The 19 focused allocation, bundle, and suite-resume tests also pass. See
+`docs/data-bundle.md` for commands, validation scope, and figure mapping.

@@ -10,8 +10,9 @@ manuscripts, reviewer correspondence, and paper result files are not tracked in 
 The synthetic example demonstrates execution; it does not reproduce the
 paper's numbers.
 A separate local review data bundle supports quick numerical replay and an
-analysis-suite rerun from processed inputs. One historical SI allocation-sensitivity
-table remains frozen; neither mode rebuilds every experiment.
+analysis-suite rerun from processed inputs, including the deterministic
+cogeneration/biomass allocation sensitivity. Quick replay retains scenario
+intermediates; the full mode rebuilds the documented numerical suite.
 See [processed-data reproduction](docs/data-bundle.md) for commands, verified
 scope, and outstanding data-publication questions. The bundle is not published.
 

@@ -11,7 +11,7 @@ def test_resume_preserves_upstream_work_after_failure(tmp_path, monkeypatch):
     calls = []
     names = [name for name in vars(suite) if name.startswith('run_') or name == 'build_manuscript_results_snapshot']
     for name in names:
-        monkeypatch.setattr(suite, name, lambda name=name: calls.append(name))
+        monkeypatch.setattr(suite, name, lambda *args, name=name: calls.append(name))
     def fail():
         raise RuntimeError('interrupted scenario')
     monkeypatch.setattr(suite, 'run_future_grid_scenarios', fail)
@@ -19,7 +19,7 @@ def test_resume_preserves_upstream_work_after_failure(tmp_path, monkeypatch):
         suite.main()
     manifest = json.loads((tmp_path / 'paper1_suite_manifest.json').read_text())
     assert [s['step'] for s in manifest['steps']] == [
-        'paper_baseline', 'calibration_robustness', 'method_simplifications', 'closing_analyses']
+        'paper_baseline', 'allocation_sensitivity', 'calibration_robustness', 'method_simplifications', 'closing_analyses']
     assert not manifest['complete']
     calls.clear()
     monkeypatch.setattr(suite, 'run_future_grid_scenarios', lambda: calls.append('future'))
