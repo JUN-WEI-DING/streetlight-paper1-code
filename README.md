@@ -10,7 +10,8 @@ manuscripts, reviewer correspondence, and paper result files are not tracked in 
 The synthetic example demonstrates execution; it does not reproduce the
 paper's numbers.
 A separate local review data bundle supports quick numerical replay and an
-analysis-suite rerun from processed inputs, including the deterministic
+analysis-suite rerun from processed inputs plus separately downloaded NASA weather,
+including the deterministic
 cogeneration/biomass allocation sensitivity. Quick replay retains scenario
 intermediates; the full mode rebuilds the documented numerical suite.
 See [processed-data reproduction](docs/data-bundle.md) for commands, verified

@@ -31,7 +31,7 @@ tonnes CO2e, and lifecycle cost in NTD. Divide by 64 for per-light values.
 | Generation and demand | Provider-format Parquet, as handled by `streetlight.processing.power_adapter`; artificial schema examples are in `test_paper1_final_data_pipeline.py`. Taipower local time converts to UTC. | raw-data pipeline |
 | Satellite | Weekly PAR Zarr stores checked by `check_par_weekly_root.py`, with time/latitude/longitude coordinates. | PAR aggregation |
 | Regional power/flow | Pipeline-produced interval-energy tables with signed flows and storage columns. | AEF and fuel/storage sensitivities |
-| Weather | Validated NASA POWER hourly UTC T2M/WS10M cache; explicit `--fetch-weather` for download. | PV benchmark |
+| Weather | Separately downloaded NASA POWER hourly UTC T2M/WS10M; use `fetch_bundle_weather.py` after bundle staging to verify study values. | PV benchmark |
 | Wind classification | External `data/power/wind_unit_classification.csv` configured by `data.wind_unit_classification_path`; unit names mapped to onshore/offshore categories. The supplied snapshot has no classification file and uses the existing prefix fallback; do not invent a mapping for reference comparison. | AEF and future-grid calculations |
 | Population | External study-year municipality mapping. | population-weighted selection |
 | Intermediate results | Baseline/Pareto/selected-allocation CSVs, structured-values JSON, PV comparison JSON, figure-data tables. | supplementary summaries |
@@ -142,7 +142,12 @@ The isolated processed-input validation compared 8,859 numerical values and
 79 figure/result CSVs with the current reference bundle at relative/absolute
 tolerances of 1e-8, with no differences. This combines the previously verified
 full-suite run with a separate rerun of the new allocation stage and final value
-builder; unchanged stages were not repeated. All 179 bundled files passed
-SHA-256 verification. Reference answers are kept separate from working outputs.
+builder; unchanged stages were not repeated. All 179 files in the earlier bundle passed
+SHA-256 verification. The current bundle omits the 14 public NASA responses: all
+165 retained files passed verification in a fresh temporary checkout. All 14
+weather cells were downloaded afresh and matched the recorded scientific values;
+API metadata differed. Quick replay then matched 8,833 numerical values and three
+core figure tables and generated six figures. The full suite was not repeated
+for this packaging-only change. Reference answers are kept separate from working outputs.
 The 19 focused allocation, bundle, and suite-resume tests also pass. See
 `docs/data-bundle.md` for commands, validation scope, and figure mapping.

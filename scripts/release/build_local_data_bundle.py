@@ -28,7 +28,6 @@ def selected_files(root):
                     'unit_generation.csv', 'category_generation.csv', 'flow.csv'):
         add(f'{INPUTS}/power/{pattern}')
     for pattern in ('data/geo/county_boundaries.*', 'data/geo/municipal_population_2024.json',
-                    'outputs/final_runs/paper1_pv_benchmark_inputs/met_*.json',
                     'outputs/paper_assets/paper1/figure_data/*.csv'):
         add(pattern)
     # The full baseline candidate panel is reusable; large alternative-scenario
@@ -60,6 +59,17 @@ def main():
     summary = {'files': len(paths), 'uncompressed_bytes': sum(p.stat().st_size for p in paths)}
     if args.dry_run:
         print(json.dumps(summary)); return
+    weather = []
+    for path in sorted(root.glob('outputs/final_runs/paper1_pv_benchmark_inputs/met_*.json')):
+        payload = json.loads(path.read_bytes())
+        _, latitude, longitude = path.stem.split('_')
+        parameters = json.dumps(payload['properties']['parameter'], sort_keys=True, separators=(',', ':')).encode()
+        weather.append({'path': path.relative_to(root).as_posix(),
+                        'latitude': float(latitude), 'longitude': float(longitude),
+                        'parameter_sha256': hashlib.sha256(parameters).hexdigest(),
+                        'original_file_sha256': hashlib.sha256(path.read_bytes()).hexdigest()})
+    if len(weather) != 14:
+        raise ValueError(f'Expected 14 meteorological grid cells, found {len(weather)}')
     args.output.parent.mkdir(parents=True, exist_ok=True)
     records = []
     args.output.unlink(missing_ok=True)
@@ -78,7 +88,8 @@ def main():
                             'role': 'expected_answer' if path.name in FINAL else 'input_or_intermediate'})
             write(name, data)
         commit = subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True).strip()
-        manifest = {'schema_version': 1, 'status': 'LOCAL_AUTHOR_REVIEW_NOT_CLEARED_FOR_PUBLICATION',
+        manifest = {'schema_version': 2, 'status': 'LOCAL_AUTHOR_REVIEW_NOT_CLEARED_FOR_PUBLICATION',
+                    'external_weather': weather,
                     'source_commit': commit, 'files': records,
                     'rights': 'See docs/data-bundle.md. No blanket data license is granted.',
                     'scope': 'Processed inputs and frozen intermediates; not raw-data reconstruction.'}

@@ -108,6 +108,10 @@ def replay(*, full=False, run_suite=True):
     for name in FINALS:
         if (ROOT / RESULTS / name).exists():
             raise FileExistsError(f'Replay needs absent generated answers: {name}')
+    manifest_path = ROOT / 'bundle.json'
+    if manifest_path.exists() and json.loads(manifest_path.read_text()).get('external_weather'):
+        from fetch_bundle_weather import fetch
+        fetch(ROOT, check_only=True)
     if full and run_suite:
         if (ROOT / RESULTS).exists() or (ROOT / 'outputs/paper_assets').exists():
             raise FileExistsError('Full rerun needs absent analysis outputs; stage with --full in a fresh checkout')
