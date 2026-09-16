@@ -1,0 +1,205 @@
+# =============================================================================
+# Streetlight Configuration File
+# =============================================================================
+# 路燈碳排放分析系統 - 統一引數配置
+#
+# 環境變數覆寫:
+#   STREETLIGHT_DATA_DIR   - 資料根目錄
+#   STREETLIGHT_CONFIG     - 配置檔路徑
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 資料目錄 / Data Directories
+# -----------------------------------------------------------------------------
+data:
+  root_dir: "./data"  # 狀態：執行期路徑｜來源：repo 內的資料根目錄
+  power_dir: "./data/power"  # 狀態：執行期路徑｜來源：repo 內的電力系統資料目錄
+  wind_unit_classification_path: "./data/power/wind_unit_classification.csv"  # 狀態：研究分類表｜來源：風電機組名稱的陸域 / 離岸分類
+  par_raw_dir: "./himawari/L2/PAR/L2/PAR"  # 狀態：執行期路徑｜來源：本機 Himawari PAR 原始資料庫
+  par_zarr_path: "./data/zarr/himawari_par_2024.zarr"  # 狀態：執行期快取路徑｜來源：PAR zarr 格式快取檔
+
+# -----------------------------------------------------------------------------
+# 區域設定 / Regions
+# -----------------------------------------------------------------------------
+regions:
+  list: ["north", "central", "south", "east", "island_penghu", "island_kinmen", "island_lienchiang"]  # 狀態：研究分區定義｜來源：四個台灣本島電網區與三個離島負載服務區
+  mapping:
+    north: "N"  # 狀態：內部代碼對照｜來源：北部區域簡碼
+    central: "C"  # 狀態：內部代碼對照｜來源：中部區域簡碼
+    south: "S"  # 狀態：內部代碼對照｜來源：南部區域簡碼
+    east: "E"  # 狀態：內部代碼對照｜來源：東部區域簡碼
+    island_penghu: "IP"  # 狀態：內部代碼對照｜來源：澎湖離島負載服務區簡碼
+    island_kinmen: "IK"  # 狀態：內部代碼對照｜來源：金門離島負載服務區簡碼
+    island_lienchiang: "IL"  # 狀態：內部代碼對照｜來源：連江離島負載服務區簡碼
+
+# -----------------------------------------------------------------------------
+# 排放因子 / Emission Factors
+# -----------------------------------------------------------------------------
+# 單位: kg CO2e/kWh
+# 角色：AEF pipeline 使用的燃料 / 機組類型生命週期係數集
+emission_factors:
+  Coal: 0.820  # IPCC AR5 WG3 Annex III Table A.III.2 lifecycle median, pulverised coal
+  IPP-Coal: 0.820  # IPCC AR5 WG3 Annex III lifecycle median, pulverised coal (民營燃煤 ≡ PC technology)
+  LNG: 0.490  # IPCC AR5 WG3 Annex III lifecycle median, gas combined cycle (CCGT)
+  IPP-LNG: 0.490  # IPCC AR5 WG3 Annex III lifecycle median, gas combined cycle (民營燃氣 ≡ CCGT)
+  Oil: 0.815  # ecoinvent v3.10 via SimaPro 10.2.0.3 `electricity production, oil` RoW, IPCC 2021 GWP100 V1.03; source-role audit: artifacts/lca/simapro_index/grid_fuel_emission_factor_source_roles.csv
+  Diesel: 0.880  # ecoinvent v3.10 via SimaPro 10.2.0.3 `electricity production, diesel` RoW, IPCC 2021 GWP100 V1.03; source-role audit: artifacts/lca/simapro_index/grid_fuel_emission_factor_source_roles.csv
+  Nuclear: 0.012  # IPCC AR5 WG3 Annex III lifecycle median (covers mining, fuel cycle, operation, decommissioning)
+  Hydro: 0.024  # IPCC AR5 WG3 Annex III lifecycle median, hydropower
+  Wind: 0.011  # IPCC AR5 WG3 Annex III lifecycle median, wind onshore
+  Offshore Wind: 0.012  # IPCC AR5 WG3 Annex III lifecycle median, wind offshore
+  Solar: 0.048  # IPCC AR5 WG3 Annex III lifecycle median, solar PV utility-scale
+  Geothermal: 0.038  # IPCC AR5 WG3 Annex III lifecycle median, geothermal
+  Biomass: 0.230  # IPCC AR5 WG3 Annex III lifecycle median, biomass dedicated
+  Co-Gen: 0.460  # ecoinvent v3.10 via SimaPro 10.2.0.3 `heat and power co-generation, natural gas, combined cycle 400MW electrical` RoW, energy allocation, IPCC 2021 GWP100 V1.03; source-role audit: artifacts/lca/simapro_index/grid_fuel_emission_factor_source_roles.csv
+  BESS: 3.1e-8  # placeholder; resolved dynamically by storage carbon-pool model (§2.4.2)
+  PHS: 3.1e-8  # placeholder; resolved dynamically by storage carbon-pool model (§2.4.2)
+
+# -----------------------------------------------------------------------------
+# 儲能系統 / Storage Systems
+# -----------------------------------------------------------------------------
+storage:
+  # Grid-side storage: PHS (pumped hydro: 明潭/大觀/大觀二) and BESS (Taipower 「電池」)
+  # share a single carbon-energy pool but operate with object-specific efficiencies.
+  # See docs/engineering/grid_storage_pool_design.md.
+  bess:
+    charge_efficiency: 0.9487  # 狀態：技術預設值｜來源：round-trip 0.90 對稱拆分，√0.90≈0.9487
+    discharge_efficiency: 0.9487  # 狀態：技術預設值｜來源：round-trip 0.90 對稱拆分，√0.90≈0.9487
+  phs:
+    charge_efficiency: 0.8832  # 狀態：技術預設值｜來源：抽水蓄能 round-trip 0.78 對稱拆分，√0.78≈0.8832
+    discharge_efficiency: 0.8832  # 狀態：技術預設值｜來源：抽水蓄能 round-trip 0.78 對稱拆分，√0.78≈0.8832
+
+# -----------------------------------------------------------------------------
+# PAR 處理引數 / PAR Processing
+# -----------------------------------------------------------------------------
+par:
+  upsample_factor: 5  # 狀態：處理設定｜來源：PAR 工作流採 5 km -> 1 km 重取樣
+  all_touched: false  # 狀態：GIS 處理設定｜來源：raster-to-polygon 聚合選項
+  aoi_bounds: [118.0, 124.0, 27.0, 20.0]  # 狀態：地理範圍定義｜來源：台灣研究範圍邊界
+  file_pattern: "*.nc.gz"  # 狀態：執行期檔案選擇器｜來源：Himawari PAR 原始檔命名規則
+  max_workers: null  # 狀態：執行期設定｜來源：留空代表自動決定平行工作數
+
+# -----------------------------------------------------------------------------
+# 標準化路燈系統引數 / Standardized Streetlight Installation
+# -----------------------------------------------------------------------------
+simulation:
+  standardized_installation:
+    n_lights: 64  # 狀態：暫定 / 混合依據｜來源：案例導向的代表性配置規模
+    light_power_kw: 0.1  # 狀態：外部可支撐｜來源：台灣市政 LED 路燈代表功率，約 100 W
+    par_to_kw_factor: 0.0081  # 狀態：內部校準 / 混合依據｜來源：2024 城市平均年度能量對齊校準結果
+    par_to_kw_factor_status: "internally_calibrated"  # 狀態：中繼標記｜來源：用於報告來源狀態的標記欄位
+    load_mode: "solar_zenith"  # 狀態：正式基準控制代理｜來源：以日出日沒時程近似路燈啟閉
+    solar_zenith_deg: 90.833  # 狀態：外部可支撐代理｜來源：NOAA 常用天文日出 / 日沒角度
+    lighting_threshold_par: 1.0  # 狀態：舊版 / 內部啟發式｜來源：只保留給已棄用的 par-threshold 模式
+
+# -----------------------------------------------------------------------------
+# 經濟分析引數 / Economic Analysis
+# -----------------------------------------------------------------------------
+economics:
+  analysis_years: 20  # 狀態：外部可支撐｜來源：標準生命週期 / 專案分析年限
+  electricity_price: 3.7556  # 狀態：研究代理值｜來源：台電 2024 年 10 月後平均電價水準；作為 retail-price proxy，不作為路燈專用全年電價
+
+  cost:
+    pv_capacity_kw_per_factor: 18.0  # 狀態：暫定內部基準錨點｜來源：solar_factor = 1.0 的實體容量對應
+    pv_capex_ntd_per_kw: 42880  # 狀態：外部基準值可支撐｜來源：經調整的 PV CAPEX 基準代理值
+    pv_om_ntd_per_kw_year: 704  # 狀態：外部基準值可支撐｜來源：經調整的 PV 年 O&M 基準代理值
+    pv_eol_ntd_per_kw: 0  # 狀態：內部假設｜來源：基準情境不另外計入 PV EoL 費
+    battery_capex_ntd_per_kwh: 8096  # 狀態：外部基準值可支撐｜來源：電池能量 CAPEX 基準代理值
+    battery_power_capex_ntd_per_kw: 30976  # 狀態：外部基準值可支撐｜來源：電池功率 CAPEX 基準代理值
+    battery_om_fraction_of_capex_per_year: 0.025  # 狀態：外部基準值可支撐｜來源：電池年 O&M 比例基準值
+    battery_replacement_year: 12  # 狀態：外部基準值可支撐｜來源：基準情境電池更換年限
+    battery_replacement_energy_capex_ntd_per_kwh: 4896  # 狀態：外部基準值可支撐｜來源：電池更換能量成本代理值
+    battery_replacement_power_capex_ntd_per_kw: 0  # 狀態：內部簡化假設｜來源：更換只計能量部分
+    battery_eol: 0  # 狀態：內部假設｜來源：基準情境不另外計入電池 EoL 費
+    other_capex: 44583  # 狀態：暫定內部彙總值｜來源：工作簿自另一份 breakdown 匯入的總值
+    other_om: 46097  # 狀態：暫定內部彙總值｜來源：工作簿自另一份 breakdown 匯入的總值
+    other_eol: 6300  # 狀態：暫定內部彙總值｜來源：工作簿自另一份 breakdown 匯入的總值
+    grid_fixed_cost: 95000  # 狀態：暫定內部彙總值｜來源：工作簿中的純電網固定成本總值
+
+  financial:
+    discount_rate: 0.05  # 狀態：作者選定 LCC 中央情境｜來源：公共投資折現實務作為背景，不視為 OMB A-94 直接指定值
+    pv_salvage_fraction: 0.0  # 狀態：內部假設｜來源：基準情境不給殘值折抵
+    battery_salvage_fraction: 0.0  # 狀態：內部假設｜來源：基準情境不給殘值折抵
+    other_salvage_fraction: 0.0  # 狀態：內部假設｜來源：基準情境不給殘值折抵
+
+  scenarios:
+    conservative:
+      financial:
+        discount_rate: 0.08  # 狀態：情境假設｜來源：較高資金成本的保守情境
+      cost:
+        pv_capex_ntd_per_kw: 48320  # 狀態：情境假設｜來源：保守 PV CAPEX 基準情境
+        battery_capex_ntd_per_kwh: 9310  # 狀態：情境假設｜來源：保守電池能量 CAPEX 基準情境
+        battery_power_capex_ntd_per_kw: 35622  # 狀態：情境假設｜來源：保守電池功率 CAPEX 基準情境
+        battery_replacement_year: 10  # 狀態：情境假設｜來源：較早更換時點
+        battery_replacement_energy_capex_ntd_per_kwh: 4896  # 狀態：情境假設｜來源：沿用基準更換成本
+    optimistic:
+      financial:
+        discount_rate: 0.03  # 狀態：情境假設｜來源：較低資金成本的樂觀情境
+      cost:
+        pv_capex_ntd_per_kw: 35840  # 狀態：情境假設｜來源：樂觀 PV CAPEX 基準情境
+        battery_capex_ntd_per_kwh: 6882  # 狀態：情境假設｜來源：樂觀電池能量 CAPEX 基準情境
+        battery_power_capex_ntd_per_kw: 26330  # 狀態：情境假設｜來源：樂觀電池功率 CAPEX 基準情境
+        battery_replacement_year: 15  # 狀態：情境假設｜來源：較晚更換時點
+        battery_replacement_energy_capex_ntd_per_kwh: 3917  # 狀態：情境假設｜來源：樂觀更換能量成本情境
+
+  pareto:
+    solar:
+      min: 0.5  # 狀態：設計空間定義｜來源：全域 solar sweep 下界
+      max: 3.0  # 狀態：設計空間定義｜來源：全域 solar sweep 上界
+      step: 0.5  # 狀態：設計空間定義｜來源：全域 solar sweep 步長
+    battery:
+      min: 0.5  # 狀態：設計空間定義｜來源：全域 battery sweep 下界
+      max: 3.0  # 狀態：設計空間定義｜來源：全域 battery sweep 上界
+      step: 0.5  # 狀態：設計空間定義｜來源：全域 battery sweep 步長
+      power_cap_multiplier_of_load: 1.5  # 狀態：內部工程合理性規則｜來源：避免不合理的電池功率過度放大
+
+# -----------------------------------------------------------------------------
+# 儲能排程引數 / Storage Dispatch
+# -----------------------------------------------------------------------------
+storage_dispatch:
+  default:
+    capacity_kwh: 10.0  # 狀態：暫定內部基準錨點｜來源：battery_factor = 1.0 的電池能量容量
+    power_kw: 5.0  # 狀態：暫定內部基準錨點｜來源：battery_factor = 1.0 的電池功率
+    eta_roundtrip: 0.90  # 狀態：外部可支撐｜來源：鋰電儲能 round-trip efficiency 基準值
+    eta_c: null  # 狀態：執行時導出參數｜來源：留空時由程式依 round-trip efficiency 推回充電效率
+    eta_d: null  # 狀態：執行時導出參數｜來源：留空時由程式依 round-trip efficiency 推回放電效率
+    init_soc: 0.5  # 狀態：內部模擬假設｜來源：中性初始 SOC
+    self_discharge_per_hour: 0.0  # 狀態：內部簡化假設｜來源：正式基準調度忽略自放電
+
+# -----------------------------------------------------------------------------
+# 日誌 / Logging
+# -----------------------------------------------------------------------------
+logging:
+  log_dir: "logs"  # 狀態：執行期路徑｜來源：repo 內的 log 輸出目錄
+
+# -----------------------------------------------------------------------------
+# 快取 / Cache
+# -----------------------------------------------------------------------------
+cache:
+  dir: "cache"  # 狀態：執行期路徑｜來源：repo 內的 cache 目錄
+
+# -----------------------------------------------------------------------------
+# 輸出 / Outputs
+# -----------------------------------------------------------------------------
+outputs:
+  base_dir: "outputs"  # 狀態：執行期路徑｜來源：repo 內的 outputs 根目錄
+  aef:
+    dir: "outputs/AEF"  # 狀態：執行期路徑｜來源：正式 AEF pipeline 輸出目錄
+  par:
+    dir: "outputs/par"  # 狀態：執行期路徑｜來源：正式 PAR 處理輸出目錄
+  pareto:
+    dir: "outputs/pareto"  # 狀態：執行期路徑｜來源：一般 Pareto 分析輸出目錄
+  streetlight_sim:
+    dir: "outputs/streetlight_sim"  # 狀態：執行期路徑｜來源：一般直接模擬輸出目錄
+
+# -----------------------------------------------------------------------------
+# 論文工作流 / Paper Workflow
+# -----------------------------------------------------------------------------
+paper:
+  inputs:
+    par_path: "outputs/par/par_wide.csv"  # 狀態：正式工作流路徑｜來源：論文分析使用的 PAR 資料表
+    aef_dir: "outputs/AEF"  # 狀態：正式工作流路徑｜來源：論文分析使用的 regional AEF 輸出
+    region_map: "config/region_city_map.json"  # 狀態：正式工作流路徑｜來源：研究用城市-區域對照檔
+    aef_column: "FLOW_UNIT_FINAL_AEF"  # 狀態：正式欄位選擇器｜來源：flow-adjusted 最終 AEF 欄位
+  outputs:
+    dir: "outputs/paper_baseline"  # 狀態：正式工作流路徑｜來源：論文工作流根輸出目錄

@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "streetlight-paper1"
+version = "0.1.0"
+description = "Dispatch-aware PV-battery streetlight research code"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+license = "MIT"
+dependencies = [
+  "numpy", "pandas>=2,<3", "pyyaml", "geopandas", "xarray",
+  "joblib", "numba", "matplotlib", "scipy", "pyarrow",
+  "rasterio", "netCDF4", "zarr>=2,<3", "tqdm", "fsspec", "dask[array]",
+]
+
+[project.optional-dependencies]
+pv-benchmark = ["pvlib==0.13.1"]
+
+[dependency-groups]
+dev = ["pytest"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["scripts/analysis", "examples/synthetic"]

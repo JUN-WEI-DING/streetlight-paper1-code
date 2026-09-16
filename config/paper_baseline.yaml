@@ -1,0 +1,181 @@
+# Paper 1 canonical inputs: keep data.power_dir pointed at the staged canonical
+# input snapshot rather than the legacy data/power/ staging area. The canonical
+# snapshot uses the post-QA Storage-* schema and pre-aggregated PHS / BESS
+# columns required by the AEF, storage carbon-pool, and sensitivity workflows.
+data:
+  power_dir: outputs/final_runs/paper1_canonical_inputs/power
+
+simulation:
+  standardized_installation:
+    n_lights: 64  # 狀態：暫定 / 混合依據｜來源：案例導向的代表性配置，據稱一組儲能對應 64 盞路燈
+    light_power_kw: 0.1  # 狀態：外部可支撐｜來源：台灣市政 LED 路燈代表功率，約 100 W/盞
+    par_to_kw_factor: 0.0081  # fallback default; Paper 1 canonical outputs use paper_contract.json effective_par_to_kw_factor = 0.0077
+    par_to_kw_factor_status: internally_calibrated  # 狀態：中繼標記｜用途：在論文 / 來源紀錄報表中標示此參數屬於內部校準值
+    load_mode: solar_zenith  # 狀態：正式基準控制代理｜來源：台灣一般市政路燈以日出日沒排程啟閉，本研究以太陽天頂角近似
+    solar_zenith_deg: 90.833  # USNO apparent sunrise/sunset solar-zenith convention
+    lighting_threshold_par: 1.0  # 狀態：舊版 / 內部啟發式｜用途：只保留給舊 par_threshold 模式，已非正式基準
+
+economics:
+  analysis_years: 20.0  # 狀態：外部可支撐｜來源：能源 / 基礎設施生命週期分析常用 20 年期
+  electricity_price: 3.7556  # 狀態：研究代理值｜來源：台電 2024 年 10 月後平均電價水準；作為 retail-price proxy，不作為路燈專用全年電價
+  cost:
+    pv_capacity_kw_per_factor: 18.0  # 狀態：暫定內部基準錨點｜用途：solar_factor = 1.0 對應的實體 PV 容量
+    pv_capex_ntd_per_kw: 42880  # 狀態：外部基準值可支撐｜來源：依 DOE / MOEA 類基準值調整的 PV CAPEX 代理值
+    pv_om_ntd_per_kw_year: 704  # 狀態：外部基準值可支撐｜來源：PV 年運維費基準值，換算為 NTD/kW-yr
+    pv_eol_ntd_per_kw: 0  # 狀態：內部假設｜說明：基準情境不另外計入獨立 PV EOL 費
+    battery_capex_ntd_per_kwh: 8096  # 狀態：外部基準值可支撐｜來源：REopt / NREL 類電池能量 CAPEX 代理值
+    battery_power_capex_ntd_per_kw: 30976  # 狀態：外部基準值可支撐｜來源：REopt / NREL 類電池功率 CAPEX 代理值
+    battery_om_fraction_of_capex_per_year: 0.025  # 狀態：外部基準值可支撐｜來源：電池年 O&M 比例基準值
+    battery_replacement_year: 12  # 狀態：外部基準值可支撐｜來源：基準情境電池更換年限
+    battery_replacement_energy_capex_ntd_per_kwh: 4896  # 狀態：外部基準值可支撐｜來源：更換時的電池能量成本代理值
+    battery_replacement_power_capex_ntd_per_kw: 0  # 狀態：內部簡化假設｜說明：更換只計能量部分，不另計功率部分
+    battery_eol: 0  # 狀態：內部假設｜說明：基準情境不另外計入獨立電池 EOL 費
+    other_capex: 44583  # 狀態：暫定內部彙總值｜來源：另一份成本 breakdown 匯總後輸入
+    other_om: 46097  # 狀態：暫定內部彙總值｜來源：另一份成本 breakdown 匯總後輸入
+    other_eol: 6300  # 狀態：暫定內部彙總值｜來源：另一份成本 breakdown 匯總後輸入
+    grid_fixed_cost: 95000  # 狀態：暫定內部彙總值｜來源：工作簿中的基準純電網固定成本總值
+  financial:
+    discount_rate: 0.05  # 狀態：作者選定 LCC 中央情境｜來源：公共投資折現實務作為背景，不視為 OMB A-94 直接指定值
+    pv_salvage_fraction: 0.0  # 狀態：內部假設｜說明：基準情境不給殘值折抵
+    battery_salvage_fraction: 0.0  # 狀態：內部假設｜說明：基準情境不給殘值折抵
+    other_salvage_fraction: 0.0  # 狀態：內部假設｜說明：基準情境不給殘值折抵
+  scenarios:
+    conservative:
+      financial:
+        discount_rate: 0.08  # 狀態：情境假設｜說明：較保守、資金成本較高
+      cost:
+        pv_capex_ntd_per_kw: 48320  # 狀態：情境假設｜說明：較保守 PV CAPEX
+        battery_capex_ntd_per_kwh: 9310  # 狀態：情境假設｜說明：較保守 battery energy CAPEX
+        battery_power_capex_ntd_per_kw: 35622  # 狀態：情境假設｜說明：較保守 battery power CAPEX
+        battery_replacement_year: 10  # 狀態：情境假設｜說明：更早更換
+        battery_replacement_energy_capex_ntd_per_kwh: 4896  # 狀態：情境假設｜說明：沿用基準更換成本
+    optimistic:
+      financial:
+        discount_rate: 0.03  # 狀態：情境假設｜說明：較樂觀、資金成本較低
+      cost:
+        pv_capex_ntd_per_kw: 35840  # 狀態：情境假設｜說明：較樂觀 PV CAPEX
+        battery_capex_ntd_per_kwh: 6882  # 狀態：情境假設｜說明：較樂觀 battery energy CAPEX
+        battery_power_capex_ntd_per_kw: 26330  # 狀態：情境假設｜說明：較樂觀 battery power CAPEX
+        battery_replacement_year: 15  # 狀態：情境假設｜說明：更晚更換
+        battery_replacement_energy_capex_ntd_per_kwh: 3917  # 狀態：情境假設｜說明：較樂觀 replacement energy CAPEX
+  pareto:
+    solar:
+      min: 0.25  # 狀態：設計空間定義｜說明：solar sweep 下界
+      max: 10.0  # 狀態：設計空間定義｜說明：solar sweep 上界
+      step: 0.2  # 狀態：設計空間定義｜說明：solar sweep 步長
+    battery:
+      min: 0.25  # 狀態：設計空間定義｜說明：battery sweep 下界
+      max: 18.0  # 狀態：設計空間定義｜說明：battery sweep 上界
+      step: 0.2  # 狀態：設計空間定義｜說明：battery sweep 步長
+      power_cap_multiplier_of_load: 1.5  # 狀態：內部工程合理性規則｜說明：避免不合理的電池功率過度放大
+
+storage_dispatch:
+  default:
+    capacity_kwh: 10.0  # 狀態：暫定內部基準錨點｜用途：battery_factor = 1.0 對應的電池能量容量
+    power_kw: 5.0  # 狀態：暫定內部基準錨點｜用途：battery_factor = 1.0 對應的電池功率
+    eta_roundtrip: 0.90  # 狀態：外部可支撐｜來源：鋰電儲能 round-trip efficiency 基準值
+    eta_c: null  # 狀態：執行時導出參數｜說明：留空時由 code 依 round-trip efficiency 自動推回 charge efficiency
+    eta_d: null  # 狀態：執行時導出參數｜說明：留空時由 code 依 round-trip efficiency 自動推回 discharge efficiency
+    init_soc: 0.5  # 狀態：內部模擬假設｜說明：初始 SOC 設為中性 50%
+    self_discharge_per_hour: 0.0  # 狀態：內部簡化假設｜說明：正式基準調度忽略自放電
+
+paper:
+  workflow:
+    canonical_results_dir: outputs/final_runs/paper1_canonical_results  # 狀態：正式工作流路徑｜用途：Paper 1 canonical analysis outputs
+    canonical_inputs_dir: outputs/final_runs/paper1_canonical_inputs  # 狀態：正式工作流路徑｜用途：Paper 1 frozen analysis inputs
+    paper_assets_dir: outputs/paper_assets/paper1  # 狀態：正式工作流路徑｜用途：Paper 1 figures, SI figures, and source data
+    figures_dir: outputs/paper_assets/paper1/figures  # 狀態：正式工作流路徑｜用途：main-text figures
+    si_figures_dir: outputs/paper_assets/paper1/si_figures  # 狀態：正式工作流路徑｜用途：supplementary figures
+    figure_data_dir: outputs/paper_assets/paper1/figure_data  # 狀態：正式工作流路徑｜用途：figure source data consumed by manuscript rendering
+    manuscript_values_path: outputs/final_runs/paper1_canonical_results/paper1_manuscript_values.json  # 狀態：正式工作流路徑｜用途：structured values used to render prose.md and SI.md
+  study:
+    city_count: 22  # 狀態：研究範圍定義｜說明：Paper 1 納入的台灣市縣數
+  selected_design:
+    label: knee  # 狀態：正式代表設計選擇器｜說明：正文與圖表使用的 Pareto-knee allocation
+    solar_panel_factor: 1.85  # 狀態：正式代表設計輸入｜說明：selected design 的 PV factor
+    battery_factor: 8.45  # 狀態：正式代表設計輸入｜說明：selected design 的 battery factor
+  currency:
+    ntd_per_usd: 32.108  # 狀態：正式換匯輸入｜來源：Central Bank annual-period-average value used by Paper 1 cost conversion
+  manuscript:
+    city_name_overrides:
+      Hsinchu Co.: Hsinchu County  # 狀態：渲染標籤｜用途：英文城市名稱標準化
+      Chiayi Co.: Chiayi County  # 狀態：渲染標籤｜用途：英文城市名稱標準化
+    future_grid_scenario_labels:
+      official_2030_grid_target: 2030 MOEA target  # 狀態：渲染標籤｜用途：正文與 SI future-grid 表格
+      pathway_2050_midpoint_proxy: 2050 National Development Council net-zero pathway  # 狀態：渲染標籤｜用途：正文與 SI future-grid 表格
+    sensitivity:
+      labels:
+        Battery CAPEX: Battery CAPEX
+        PV CAPEX: PV CAPEX
+        Electricity price: Electricity price
+        PAR estimate: PAR estimate
+        Coal EF: Coal emission factor
+        LNG EF: LNG emission factor
+        Diesel EF: Diesel emission factor
+        Oil EF: Oil emission factor
+        Co-Gen EF: Gas-fired cogeneration emission factor
+        Other fuel EFs (max individual): Gas-fired cogeneration emission factor
+        PV-battery degradation: PV-battery degradation pathway
+        Discount rate: Discount rate
+        Battery replacement timing: Battery replacement timing
+        PHS round-trip efficiency: Pumped-hydro storage round-trip efficiency
+      tested_values:
+        Battery CAPEX: ±20%
+        PV CAPEX: ±20%
+        Electricity price: ±20%
+        PAR estimate: ±20%
+        Coal EF: ±20%
+        LNG EF: ±20%
+        Diesel EF: ±20%
+        Oil EF: ±20%
+        Co-Gen EF: ±20%
+        Other fuel EFs (max individual): ±20%
+        PV-battery degradation: milder and more severe pathways from Table S8d
+        Discount rate: 3 / 8%
+        Battery replacement timing: year 10 / year 14
+        PHS round-trip efficiency: 0.75 / 0.82
+  calibration:
+    par_to_kw_factor:
+      method: annual_energy_parity_mean_city  # 狀態：研究方法定義｜說明：用城市平均年度能量對齊方式校準 par_to_kw_factor
+      reference_dataset: outputs/final_runs/paper1_canonical_inputs/par/par_wide.csv  # 狀態：正式輸入路徑｜用途：校準與模擬使用的 PAR wide table
+      reference_year: 2024  # 狀態：研究範圍定義｜說明：校準基準年
+  inputs:
+    par_path: outputs/final_runs/paper1_canonical_inputs/par/par_wide.csv  # 狀態：正式工作流路徑｜用途：論文工作流的 PAR 輸入
+    aef_dir: outputs/final_runs/paper1_canonical_inputs/aef  # 狀態：正式工作流路徑｜用途：論文工作流的區域 AEF 輸入目錄
+    region_map: config/region_city_map.json  # 狀態：正式工作流路徑｜用途：論文工作流的城市-區域對照表
+    aef_column: FLOW_UNIT_FINAL_AEF  # 狀態：正式欄位選擇器｜用途：論文工作流使用的 AEF 欄位
+    align_strategy: intersection  # 狀態：正式時間對齊規則｜用途：只保留 PAR 與所有區域 AEF 的共同有效 timestamp，不做 AEF ffill/bfill
+  outputs:
+    dir: outputs/final_runs/paper1_canonical_results  # 狀態：正式工作流路徑｜用途：Paper 1 canonical result bundle
+  sensitivity:
+    output_dir: outputs/final_runs/paper1_canonical_results/sensitivity  # 狀態：正式工作流路徑｜用途：Paper 1 canonical sensitivity outputs
+    par_to_kw_factor_multipliers: [0.8, 1.0, 1.2]  # 狀態：sensitivity 設計｜說明：±20% 校準因子測試
+    lighting_threshold_par_values: [0.5, 1.0, 2.0]  # 狀態：舊版敏感度設計｜說明：只保留給舊 par-threshold 比較
+    electricity_price_multipliers: [0.8, 1.0, 1.2]  # 狀態：sensitivity 設計｜說明：±20% 電價測試
+    battery_capex_multipliers: [0.8, 1.0, 1.2]  # 狀態：sensitivity 設計｜說明：±20% battery CAPEX 測試（與其他 cost rows 統一 ±20% 以維持 tornado 軸對稱可比較性）
+    pv_capex_multipliers: [0.8, 1.0, 1.2]  # 狀態：sensitivity 設計｜說明：±20% PV CAPEX 測試（與 battery_capex / electricity_price 統一 ±20%）
+    light_power_kw_values: [0.08, 0.1, 0.12]  # 狀態：sensitivity 設計｜說明：低 / 基準 / 高燈具功率測試
+    eta_roundtrip_values: [0.85, 0.9, 0.95]  # 狀態：sensitivity 設計｜說明：儲能效率測試
+    discount_rate_values: [0.03, 0.05, 0.08]  # 狀態：sensitivity 設計｜說明：折現率測試
+  uncertainty:
+    n_samples: 2000  # 狀態：蒙地卡羅控制參數｜說明：兼顧穩定度與執行時間的抽樣數
+    seed: 20260330  # 狀態：可重現性控制｜用途：固定隨機種子
+    battery_replacement_year_values: [10, 12, 14]  # 狀態：蒙地卡羅輸入｜說明：battery replacement timing categorical support
+    battery_replacement_year_probabilities: [0.25, 0.5, 0.25]  # 狀態：蒙地卡羅輸入｜說明：replacement timing categorical probabilities
+  degradation_sensitivity:
+    scenarios:
+      low_degradation:
+        pv_degradation_per_year: 0.003  # 狀態：sensitivity 設計｜說明：低 PV degradation
+        battery_usable_capacity_multiplier: 0.95  # 狀態：sensitivity 設計｜說明：輕微 battery usable-capacity fade
+      base_degradation:
+        pv_degradation_per_year: 0.005  # 狀態：sensitivity 設計｜說明：基準 PV degradation
+        battery_usable_capacity_multiplier: 0.90  # 狀態：sensitivity 設計｜說明：基準 battery usable-capacity fade
+      high_degradation:
+        pv_degradation_per_year: 0.008  # 狀態：sensitivity 設計｜說明：高 PV degradation
+        battery_usable_capacity_multiplier: 0.85  # 狀態：sensitivity 設計｜說明：較強 battery usable-capacity fade
+        battery_replacement_year_override: 10  # 狀態：sensitivity 設計｜說明：高 degradation 下提早更換
+  carbon_payback:
+    carbon_method: coefficient  # 狀態：分析選擇器｜說明：用係數法處理隱含碳
+    boundary_scope: original  # 狀態：分析選擇器｜說明：使用原始碳邊界
+    baseline_system: Traditional  # 狀態：分析選擇器｜說明：傳統系統名稱
+    project_system: SimaPro  # 狀態：分析選擇器｜說明：專案系統名稱
