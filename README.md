@@ -25,6 +25,9 @@ Neither route reconstructs the original satellite archive or licensed LCA proces
 model. The bundle is prepared locally and is not yet published. The sharing
 conditions for processed PAR are tracked separately from provider access to raw PAR.
 
+The [release draft](docs/release-draft.md) describes the candidate artifacts,
+remaining PAR sharing question, and publication handoff.
+
 ## Run the synthetic example
 
 Use Python 3.12 and `uv`, from this checkout:
