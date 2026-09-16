@@ -14,3 +14,5 @@ __pycache__/
 .env
 .env.*
 *.pem
+/reference/
+/bundle.json

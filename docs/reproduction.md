@@ -5,8 +5,9 @@
 Use the README's locked Python 3.12 environment from this checkout. Python 3.11
 is also permitted by the dependency specification; validation here uses 3.12.
 The artificial example and unit tests run without study data. They validate
-software behavior, not agreement with observed Taiwan results. No data download
-or access-on-request arrangement is promised by this repository.
+software behavior, not agreement with observed Taiwan results. The separate [local review bundle](data-bundle.md) supplies processed inputs
+and intermediates for an independently tested replay. It has no public download
+URL yet; no access-on-request arrangement is promised.
 
 The example generates 288 UTC timestamps at 10-minute intervals, sinusoidal PV,
 a 6.4 kW night load, and artificial AEF. Its fixed-hour Asia/Taipei schedule does
@@ -91,12 +92,12 @@ changing manuscript table numbers.
 | Earlier complete analysis sequence | `run_paper1_suite.py` | all inputs needed by its component analyses |
 
 The suite predates some supplementary additions and does not call every newer
-PV/quality/conditional analysis. The value builder's CLI consumes derived figure
-tables from the private workflow; neither the tables nor figure-layout generator
-are distributed here. Its pure calculation functions remain directly available
-and are tested on artificial inputs. This export is therefore not a one-command
-reconstruction of every manuscript table. Historical rendering tokens inside
-calculation helpers are retained for compatibility, not as an editorial workflow.
+PV/quality/conditional analysis. The value builder consumes derived figure tables supplied in the separate
+local review bundle. The standalone replay regenerates the core Figure 2–4
+tables and uses frozen supplemental scenario tables as upstream inputs. Its
+base-only phase breaks the PV/uncertainty dependency cycle. See the bundle guide
+for exact commands and scope: quick replay is not a full rerun of every scenario.
+Historical rendering tokens remain for compatibility, not as an editorial workflow.
 
 ## Scientific settings that must remain explicit
 
@@ -126,11 +127,18 @@ Tests cover synthetic AEF/storage/flow, timestamp adapters, quality checks, PV
 interfaces, regression, selection geometry, replacement accounting, dispatch,
 discounting, and cost sampling. Private result-snapshot and manuscript tests are
 excluded. Export verification compares the source and export using identical
-artificial inputs and checks byte identity of package files. A full Taiwan-data
-rerun is not part of this validation.
+artificial inputs and checks byte identity of package files. A full capacity/scenario sweep rerun is not part of this validation. The local
+bundle replay additionally recomputes selected-design Taiwan dispatch, PV
+comparisons, downstream SI calculations, and numerical audits; details below.
 
 Validated on Python 3.12.3 with the checked-in lockfile: 111 tests passed. All
 package and analysis modules imported, six CLI help commands completed, and a
 small synthetic Zarr dataset round-tripped successfully. Original/export
 outputs matched for dispatch, an eight-row capacity sweep, hardware LCA, and
 regression on identical artificial inputs.
+
+The processed-data replay compared 8,829 numerical values with the reference
+JSONs at relative/absolute tolerances of 1e-8, with no differences. Frozen
+scenario intermediates remain inputs. All 175 bundled files passed SHA-256
+verification. Expected final answers were absent from working paths before
+calculation. See `docs/data-bundle.md` for the six-figure numerical mapping.

@@ -6,8 +6,10 @@ its own license; installed versions are recorded in `uv.lock`.
 
 No Himawari observations, Taipower time series, administrative boundary files,
 municipal population tables, weather cache, or SimaPro/ecoinvent process exports
-are distributed here. Obtain such inputs from their providers under the
-applicable terms before running study workflows. The NASA POWER weather adapter
+are tracked in this source repository. A separate local author-review bundle
+contains processed input snapshots and intermediates; it is not cleared for
+public distribution. See [data origins and publication status](docs/data-bundle.md).
+Obtain external inputs under their applicable terms. The NASA POWER weather adapter
 only downloads when explicitly requested with its fetch option.
 
 Study settings include published emission-factor assumptions and calibrated

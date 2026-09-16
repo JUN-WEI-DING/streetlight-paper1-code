@@ -987,6 +987,8 @@ def build_values(
     results_dir: Path,
     figure_data_dir: Path,
     config_path: Path | None = None,
+    *,
+    include_extensions: bool = True,
 ) -> dict[str, Any]:
     config = load_paper1_config(config_path)
     contract = normalize_repo_paths(_read_json(results_dir / "paper_contract.json"), repo_root=ROOT)
@@ -2196,12 +2198,15 @@ def build_values(
     }
 
     # Compact, reproducible recognized-model comparison; weather stays outside Git.
-    values["pv_model_comparison"] = json.loads(
-        (results_dir / "pv_model_comparison.json").read_text(encoding="utf-8")
-    )
-    values["conditional_uncertainty"] = json.loads(
-        (results_dir / "conditional_uncertainty.json").read_text(encoding="utf-8")
-    )
+    # Build the upstream values first, then PV and conditional uncertainty.
+    # Never bootstrap these calculations from the published answer snapshot.
+    if include_extensions:
+        values["pv_model_comparison"] = json.loads(
+            (results_dir / "pv_model_comparison.json").read_text(encoding="utf-8")
+        )
+        values["conditional_uncertainty"] = json.loads(
+            (results_dir / "conditional_uncertainty.json").read_text(encoding="utf-8")
+        )
 
     values["aef_audit"] = {
         "data_quality": build_aef_quality(config.canonical_inputs_dir),
@@ -2225,9 +2230,12 @@ def main() -> int:
     parser.add_argument("--figure-data-dir", type=Path, default=DEFAULT_FIGURE_DATA)
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG.config_path)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--base-only", action="store_true",
+                        help="Build upstream values before PV/conditional analyses")
     args = parser.parse_args()
 
-    result = build_values(args.results_dir, args.figure_data_dir, args.config)
+    result = build_values(args.results_dir, args.figure_data_dir, args.config,
+                          include_extensions=not args.base_only)
     output_path = args.output.resolve()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
