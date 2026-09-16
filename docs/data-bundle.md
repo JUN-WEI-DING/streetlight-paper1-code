@@ -11,7 +11,7 @@ section below.
 ## What is included
 
 The current archive contains 160 data/metadata files, plus `bundle.json` and
-`THIRD_PARTY_NOTICES.md`, and is
+`reference/THIRD_PARTY_NOTICES.md`, and is
 approximately 69.4 MiB compressed. Paths are preserved from the research workflow.
 The selection is executable in `scripts/release/build_local_data_bundle.py`.
 

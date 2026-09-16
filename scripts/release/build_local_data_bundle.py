@@ -102,7 +102,7 @@ def main():
                                    'credit': 'Original PAR supplied by the P-Tree System, JAXA.',
                                    'processing': 'Author-prepared municipal 10-minute series and imputation flags.'},
                     'scope': 'Processed inputs and frozen intermediates; not raw-data reconstruction.'}
-        write('THIRD_PARTY_NOTICES.md', (Path(__file__).resolve().parents[2] / 'THIRD_PARTY_NOTICES.md').read_bytes())
+        write('reference/THIRD_PARTY_NOTICES.md', (Path(__file__).resolve().parents[2] / 'THIRD_PARTY_NOTICES.md').read_bytes())
         write('bundle.json', (json.dumps(manifest, indent=2) + '\n').encode())
     digest = hashlib.sha256(args.output.read_bytes()).hexdigest()
     args.output.with_suffix(args.output.suffix + '.sha256').write_text(f'{digest}  {args.output.name}\n')
