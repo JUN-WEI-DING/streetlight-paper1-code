@@ -27,7 +27,7 @@ def selected_files(root):
                     'generation_invalid_total_report.csv', 'unit_capacity.csv',
                     'unit_generation.csv', 'category_generation.csv', 'flow.csv'):
         add(f'{INPUTS}/power/{pattern}')
-    for pattern in ('data/geo/county_boundaries.*', 'data/geo/municipal_population_2024.json',
+    for pattern in ('data/geo/municipal_population_2024.json',
                     'outputs/paper_assets/paper1/figure_data/*.csv'):
         add(pattern)
     # The full baseline candidate panel is reusable; large alternative-scenario
@@ -41,8 +41,7 @@ def selected_files(root):
                      RESULTS / 'allocation_sensitivity/scenario_summary.csv',
                      RESULTS / 'allocation_sensitivity/regional_summary.csv',
                      RESULTS / 'allocation_sensitivity/city_results.csv',
-                     RESULTS / 'allocation_sensitivity/allocation_shares.csv',
-                     Path('data/geo/county_boundaries.shp')):
+                     RESULTS / 'allocation_sensitivity/allocation_shares.csv'):
         if root / required not in paths:
             raise FileNotFoundError(required)
     return sorted(paths)
@@ -70,6 +69,12 @@ def main():
                         'original_file_sha256': hashlib.sha256(path.read_bytes()).hexdigest()})
     if len(weather) != 14:
         raise ValueError(f'Expected 14 meteorological grid cells, found {len(weather)}')
+    boundaries = []
+    for suffix in ('.cpg', '.dbf', '.prj', '.shp', '.shx'):
+        path = root / ('data/geo/county_boundaries' + suffix)
+        boundaries.append({'path': path.relative_to(root).as_posix(),
+                           'member': 'COUNTY_MOI_1140318' + ('.CPG' if suffix == '.cpg' else suffix),
+                           'sha256': hashlib.sha256(path.read_bytes()).hexdigest()})
     args.output.parent.mkdir(parents=True, exist_ok=True)
     records = []
     args.output.unlink(missing_ok=True)
@@ -89,7 +94,7 @@ def main():
             write(name, data)
         commit = subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True).strip()
         manifest = {'schema_version': 2, 'status': 'LOCAL_AUTHOR_REVIEW_NOT_CLEARED_FOR_PUBLICATION',
-                    'external_weather': weather,
+                    'external_weather': weather, 'external_boundaries': boundaries,
                     'source_commit': commit, 'files': records,
                     'rights': 'See docs/data-bundle.md. No blanket data license is granted.',
                     'scope': 'Processed inputs and frozen intermediates; not raw-data reconstruction.'}

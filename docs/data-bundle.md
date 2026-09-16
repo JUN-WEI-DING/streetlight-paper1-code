@@ -8,7 +8,8 @@ URL or access-on-request promise is made.
 ## What is included
 
 The selection is executable in `scripts/release/build_local_data_bundle.py`.
-NASA POWER API responses are omitted and downloaded separately. The packaging
+NASA POWER API responses and the five official boundary components are omitted
+and downloaded separately. The packaging
 command reports the current file count and archive size. `bundle.json` records source
 commit, original relative paths, sizes and SHA-256 hashes. The accompanying
 `.sha256` verifies the archive. No raw satellite stores, raw download Parquet,
@@ -21,7 +22,7 @@ provenance; these are not runtime paths.
 | Municipal PAR and imputation flags | PV forcing, calibration, quality audit |
 | Seven regional AEF files and storage pools | Dispatch emissions and storage audit |
 | Regional generation, national generation/capacity/categories, flow, selected quality records | Fuel/storage/static-grid/marginal analyses and audit |
-| County boundaries, 2024 municipal population | Solar-zenith locations and population weighting |
+| Boundary component hashes and 2024 municipal population intermediate | Download the official geometry; retain derived population weights |
 | NASA POWER request coordinates and value hashes (no responses) | Download 14 full-year 2024 UTC responses and check their values |
 | Baseline 4,500-design × 22-city panel and compact scenario products | Capacity reselection and downstream analysis without rerunning every sweep |
 | 13 numerical figure tables and allocation-sensitivity results | Quick-mode intermediates; regenerated in full mode |
@@ -46,6 +47,7 @@ sha256sum -c paper1-data-review.tar.gz.sha256
 uv run --locked python scripts/analysis/reproduce_from_bundle.py \
   --archive /absolute/path/to/paper1-data-review.tar.gz --stage-only
 uv run --locked python scripts/analysis/fetch_bundle_weather.py
+uv run --locked python scripts/analysis/fetch_bundle_boundaries.py
 uv run --locked python scripts/analysis/reproduce_from_bundle.py
 ```
 
@@ -103,6 +105,7 @@ In a fresh checkout, use the same archive with `--full`:
 uv run --locked python scripts/analysis/reproduce_from_bundle.py \
   --archive /absolute/path/to/paper1-data-review.tar.gz --full --stage-only
 uv run --locked python scripts/analysis/fetch_bundle_weather.py
+uv run --locked python scripts/analysis/fetch_bundle_boundaries.py
 uv run --locked python scripts/analysis/reproduce_from_bundle.py --full
 ```
 
@@ -136,7 +139,15 @@ regenerated outputs without repeating the calculations.
 
 ### Verification result
 
-For the current 165-file bundle, all retained files passed checksum checks in a
+The current 160-file bundle additionally omits all five county-boundary files.
+In a fresh temporary checkout, all 160 retained files passed size/hash checks;
+the new boundary command downloaded the official ZIP and verified all five
+components byte-for-byte. Eleven focused input/bundle/replay tests passed.
+This boundary packaging change does not change coordinates or scientific inputs;
+the numerical replay below was not repeated solely for identical geometry.
+
+
+For the preceding 165-file bundle, all retained files passed checksum checks in a
 fresh temporary source checkout. All 14 NASA responses were downloaded without
 using author caches and matched the recorded meteorological-value hashes. Quick
 replay matched 8,833 numerical fields and three core figure CSVs at 1e-8 and
@@ -220,10 +231,15 @@ every historical local file has a fully resolved redistribution chain.
   pages list Open Government Data License 1.0. Retain provider attribution and
   processing descriptions; these data have been transformed by the research.
 - **Boundaries:** National Land Surveying and Mapping Center / Ministry of
-  the Interior. The historical project links the
-  [county-boundary service](https://data.gov.tw/dataset/32158), which lists
-  OGDL 1.0. The precise downloadable shapefile release still needs provenance
-  confirmation; the service listing alone does not establish its version.
+  the Interior. [Dataset 7442](https://data.gov.tw/dataset/7442) supplies the
+  1140318 (2025-03-18) TWD97 longitude/latitude release under OGDL 1.0.
+  All five downloaded COUNTY_MOI_1140318 components match the study files
+  byte-for-byte. `fetch_bundle_boundaries.py` verifies their hashes before
+  writing them to `data/geo/county_boundaries.*`; it does not change the CRS
+  or coordinates. If direct access is unavailable, download the official ZIP
+  manually and pass `--archive /path/to/file.zip`. Attribution: National Land
+  Surveying and Mapping Center, Ministry of the Interior, Taiwan, 2025,
+  county boundaries release 1140318, [OGDL 1.0](https://data.gov.tw/license).
 - **Population:** Ministry of the Interior, 2024 year-end registered population;
   exact source resource, cells and hash are embedded in the supplied JSON.
   Registered population is a deployment-weight proxy, not streetlight inventory.
@@ -247,12 +263,12 @@ this package. Research-generated intermediate tables remain in the review bundle
 | NASA POWER hourly weather | Stage bundle, then run `fetch_bundle_weather.py` | Current responses must match recorded parameter hashes; metadata-only differences are allowed |
 | Taipower generation and flows | Provider links below; preprocessing entry points in `docs/reproduction.md` | Full 2024 acquisition has not been verified from the current provider service. The bundle retains cleaned/aligned generation and flow intermediates, not raw download archives |
 | Municipal population | Exact MOI ODS resource, sheet/cells and checksum in `data/geo/municipal_population_2024.json` | The extracted, reordered JSON is a research input intermediate and remains included; the source ODS is not bundled |
-| County boundaries | Official dataset 32158 | Exact local release remains unidentified. Existing geometry remains in the private review bundle pending the author's decision; replacing it with today's geometry could change representative points and calculations |
-| PAR | Registered P-Tree access; externally prepared weekly Zarr stores | Product/version, redistribution conditions and raw-to-weekly-store acquisition route remain unresolved. Processed municipal PAR remains local-review only |
+| County boundaries | Official dataset 7442, release 1140318; `fetch_bundle_boundaries.py` | All five components match the study hashes; geometry is omitted from the bundle |
+| PAR | Registered P-Tree access; externally prepared weekly Zarr stores | The author confirms original data are temporarily unavailable locally. Product/version, redistribution conditions and raw-to-weekly-store acquisition route remain unresolved. Processed municipal PAR remains local-review only |
 
 There is no verified end-to-end public-download reconstruction of all 2024 inputs.
-The reproducible route starts from research intermediates plus downloaded weather.
-The boundary and PAR decisions must be resolved before claiming a public,
+The reproducible route starts from research intermediates plus downloaded weather and boundaries.
+The PAR access decision must be resolved before claiming a public,
 complete reproduction package. No source archive or manuscript availability
 statement should imply that the private review bundle is already downloadable.
 

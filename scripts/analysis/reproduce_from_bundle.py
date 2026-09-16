@@ -112,6 +112,9 @@ def replay(*, full=False, run_suite=True):
     if manifest_path.exists() and json.loads(manifest_path.read_text()).get('external_weather'):
         from fetch_bundle_weather import fetch
         fetch(ROOT, check_only=True)
+    if manifest_path.exists() and json.loads(manifest_path.read_text()).get('external_boundaries'):
+        from fetch_bundle_boundaries import fetch as fetch_boundaries
+        fetch_boundaries(ROOT, check_only=True)
     if full and run_suite:
         if (ROOT / RESULTS).exists() or (ROOT / 'outputs/paper_assets').exists():
             raise FileExistsError('Full rerun needs absent analysis outputs; stage with --full in a fresh checkout')

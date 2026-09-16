@@ -27,7 +27,7 @@ tonnes CO2e, and lifecycle cost in NTD. Divide by 64 for per-light values.
 | Municipal PAR | CSV with first-column UTC datetime and one numeric PAR column per city (µmol photons m⁻² s⁻¹), or Parquet with DatetimeIndex. Recalibrate if changing units; do not substitute W/m² directly. | calibration, baseline |
 | Regional AEF | Seven CSVs named `north`, `central`, `south`, `east`, `island_penghu`, `island_kinmen`, `island_lienchiang` with `.csv`; first column UTC datetime, `FLOW_UNIT_FINAL_AEF` in kg CO2e/kWh (`AEF` fallback supported). | dispatch |
 | Allocation | Included `config/region_city_map.json`; city names match PAR columns. | baseline/aggregation |
-| County geometry | External `data/geo/county_boundaries.shp` plus companion files, EPSG:4326 longitude/latitude geometries and `COUNTYNAME`. | representative points for solar-zenith lighting |
+| County geometry | External `data/geo/county_boundaries.shp` plus companion files, official TWD97 longitude/latitude release 1140318 and `COUNTYNAME`; download with `fetch_bundle_boundaries.py`. | representative points for solar-zenith lighting |
 | Generation and demand | Provider-format Parquet, as handled by `streetlight.processing.power_adapter`; artificial schema examples are in `test_paper1_final_data_pipeline.py`. Taipower local time converts to UTC. | raw-data pipeline |
 | Satellite | Weekly PAR Zarr stores checked by `check_par_weekly_root.py`, with time/latitude/longitude coordinates. | PAR aggregation |
 | Regional power/flow | Pipeline-produced interval-energy tables with signed flows and storage columns. | AEF and fuel/storage sensitivities |
@@ -143,7 +143,7 @@ The isolated processed-input validation compared 8,859 numerical values and
 tolerances of 1e-8, with no differences. This combines the previously verified
 full-suite run with a separate rerun of the new allocation stage and final value
 builder; unchanged stages were not repeated. All 179 files in the earlier bundle passed
-SHA-256 verification. The current bundle omits the 14 public NASA responses: all
+SHA-256 verification. The earlier 165-file bundle omitted the 14 public NASA responses: all
 165 retained files passed verification in a fresh temporary checkout. All 14
 weather cells were downloaded afresh and matched the recorded scientific values;
 API metadata differed. Quick replay then matched 8,833 numerical values and three
@@ -151,3 +151,8 @@ core figure tables and generated six figures. The full suite was not repeated
 for this packaging-only change. Reference answers are kept separate from working outputs.
 The 19 focused allocation, bundle, and suite-resume tests also pass. See
 `docs/data-bundle.md` for commands, validation scope, and figure mapping.
+
+The current 160-file bundle also omits the five official boundary components.
+The separate boundary download was verified in a fresh checkout: all components
+match the study byte-for-byte. Eleven focused input/bundle/replay tests pass.
+No scientific input or calculation changed in this further packaging step.
