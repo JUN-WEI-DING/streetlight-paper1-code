@@ -8,7 +8,7 @@ URL or access-on-request promise is made.
 ## What is included
 
 The selection is executable in `scripts/release/build_local_data_bundle.py`.
-The initial package contains 175 source files, 405,273,481 uncompressed bytes
+The initial package contains 175 source files, 405,273,483 uncompressed bytes
 (386.5 MiB), approximately 74.1 MiB gzip-compressed. `bundle.json` records source
 commit, original relative paths, sizes and SHA-256 hashes. The accompanying
 `.sha256` verifies the archive. No raw satellite stores, raw download Parquet,
@@ -129,26 +129,23 @@ is `rebuild_core_figure_data.py`, `rebuild_supplementary_figure_data.py`,
 Finally run `reproduce_from_bundle.py --full --verify-only` to compare the
 regenerated outputs without repeating the calculations.
 
-### Verification result and reference discrepancy
+### Verification result
 
 The isolated suite run recomputed 99,000 baseline design/city rows. All 8,829
-checked final JSON numerical fields and all 13 numerical figure tables agreed
-with the frozen references. Across 75 figure/result CSV comparisons, 74 agreed.
-The suite took approximately 13 minutes on the author's workstation; downstream
-PV, uncertainty and comparison work is additional.
+checked final JSON numerical fields and all 13 numerical figure tables agree
+with the reference bundle. All 75 figure/result CSV comparisons pass at
+`rtol=atol=1e-8`. The suite took approximately 13 minutes on the author's
+workstation; downstream PV, uncertainty and comparison work is additional.
 
-One reference difference remains intentionally visible:
-`calibration_robustness/threshold_factor_sensitivity.csv`, column
-`mean_annual_lighting_hours`. The stored reference contains 4.4086–4.5453;
-recomputation gives 4408.6212–4545.3030 hours. All other columns agree. The old
-calculation divided raw datetime integers by a nanosecond constant; microsecond
-storage reproduces the factor-of-1000 error. The standalone entry now converts
-timedeltas explicitly to hours, with tests for both timestamp resolutions.
-The final manuscript-value objects are unchanged. The reference archive and
-private manuscript/results were not overwritten. Therefore full verification
-returns a failing exit status for this known reference discrepancy; it is not
-silently accepted or hidden by changing tolerance. Review and correct the
-canonical reference before describing the entire comparison as passing.
+The calibration-robustness entry converts timedeltas explicitly to hours, with
+tests for nanosecond and microsecond timestamp storage. Its
+`mean_annual_lighting_hours` values are 4408.6212–4545.3030 hours; raw datetime
+integers must not be divided by a presumed nanosecond conversion constant.
+This correction is synchronized to the canonical research code and regenerated
+reference table. The bundle records research commit
+`52e22c5` (full identity in `bundle.json`). The final manuscript-value objects
+and Word manuscripts were unchanged. Passing numerical comparison does not
+remove the historical sensitivity exception below.
 
 ### Historical allocation-sensitivity exception
 
@@ -166,6 +163,24 @@ explicit frozen exception. Do not describe either as recomputing every SI
 experiment, even when numerical comparison passes. Resolving it requires the
 original producer/input version, or an author-reviewed replacement analysis and
 corresponding SI/reviewer-response update.
+
+Proposed replacement, pending author review: baseline plus 16 one-at-a-time
+cases (two fuels, four mainland regions, relative share changes of -20%/+20%).
+For perturbed region r, set s'_r = (1 +/- 0.2)s_r and scale other mainland shares
+by (1 - s'_r)/(1 - s_r). Change only each fuel's `-_other_allocated` columns;
+retain all named generation and all island inputs. Current baseline shares come
+from the processed generation-quality report, using purchased-power capacity
+for cogeneration and regional load shares for biomass. Conserve each fuel's
+national total at every timestamp and retain the baseline valid sample.
+Recompute AEF with the existing storage/transfer treatment, then evaluate the
+fixed selected design with the original zero-SOC convention. Report regional
+AEF changes, seven-region panel mean, equal-municipality operational abatement,
+and exact fixed-cost MAC changes. The share range is a deterministic accounting
+stress test, not a confidence interval or a balanced physical grid forecast;
+retain and report regional balance residuals with observed transfers held fixed.
+Only Table S18's last row and its directly related explanation/response would
+be updated after review. This addresses traceability in R2C14 and informs
+R1C5/R2C7, without claiming to supply a probabilistic regional-AEF model.
 
 The optional wind-classification path is absent in the source snapshot. Preserve
 the calculator's existing prefix fallback when comparing with reference results;
