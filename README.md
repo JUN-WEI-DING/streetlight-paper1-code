@@ -22,11 +22,13 @@ Two entry points are documented in [the bundle guide](docs/data-bundle.md):
 
 Both routes download NASA weather and official county boundaries separately.
 Neither route reconstructs the original satellite archive or licensed LCA process
-model. The bundle is prepared locally and is not yet published. The sharing
-conditions for processed PAR are tracked separately from provider access to raw PAR.
+model. The bundle is prepared locally and is not yet published.
+Processed municipal PAR is retained with JAXA/P-Tree attribution under the
+project’s adopted interpretation of the JAXA research-data policy; see the
+third-party notices for processing and source terms.
 
 The [release draft](docs/release-draft.md) describes the candidate artifacts,
-remaining PAR sharing question, and publication handoff.
+data attribution, and publication handoff.
 
 ## Run the synthetic example
 

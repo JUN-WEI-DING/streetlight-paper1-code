@@ -93,11 +93,16 @@ def main():
                             'role': 'expected_answer' if path.name in FINAL else 'input_or_intermediate'})
             write(name, data)
         commit = subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True).strip()
-        manifest = {'schema_version': 2, 'status': 'LOCAL_AUTHOR_REVIEW_NOT_CLEARED_FOR_PUBLICATION',
+        manifest = {'schema_version': 2, 'status': 'LOCAL_AUTHOR_REVIEW_NOT_PUBLISHED',
                     'external_weather': weather, 'external_boundaries': boundaries,
                     'source_commit': commit, 'files': records,
-                    'rights': 'See docs/data-bundle.md. No blanket data license is granted.',
+                    'rights': 'Third-party data retain source terms; code MIT does not apply.',
+                    'par_policy': {'url': 'https://earth.jaxa.jp/en/data/policy/index.html',
+                                   'basis': 'Author-adopted interpretation; not individual JAXA approval.',
+                                   'credit': 'Original PAR supplied by the P-Tree System, JAXA.',
+                                   'processing': 'Author-prepared municipal 10-minute series and imputation flags.'},
                     'scope': 'Processed inputs and frozen intermediates; not raw-data reconstruction.'}
+        write('THIRD_PARTY_NOTICES.md', (Path(__file__).resolve().parents[2] / 'THIRD_PARTY_NOTICES.md').read_bytes())
         write('bundle.json', (json.dumps(manifest, indent=2) + '\n').encode())
     digest = hashlib.sha256(args.output.read_bytes()).hexdigest()
     args.output.with_suffix(args.output.suffix + '.sha256').write_text(f'{digest}  {args.output.name}\n')

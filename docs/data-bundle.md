@@ -3,13 +3,15 @@
 This is a **local author-review package**, not a published dataset. The source
 repository is private. The code's MIT license does not cover third-party data.
 Raw public-source files are obtained from their providers; the bundle retains
-research-generated inputs, intermediates and reference results. Sharing conditions
-for the processed municipal PAR tables remain to be clarified separately from
-registered access to the source PAR product.
+research-generated inputs, intermediates and reference results.
+Processed municipal PAR is retained with JAXA/P-Tree attribution under the
+project’s adopted JAXA research-data policy interpretation; see the data-origin
+section below.
 
 ## What is included
 
-The current archive contains 160 data/metadata files, plus `bundle.json`, and is
+The current archive contains 160 data/metadata files, plus `bundle.json` and
+`THIRD_PARTY_NOTICES.md`, and is
 approximately 69.4 MiB compressed. Paths are preserved from the research workflow.
 The selection is executable in `scripts/release/build_local_data_bundle.py`.
 
@@ -235,17 +237,14 @@ adding a new mapping changes scientific inputs.
 Checked 2026-09-16; provider links establish terms/context, not an assertion that
 every historical local file has a fully resolved redistribution chain.
 
-- **PAR:** JAXA P-Tree Himawari-derived research product. The
-  [P-Tree terms](https://www.eorc.jaxa.jp/ptree/terms.html) distinguish JAXA
-  geophysical products from JMA Himawari Standard Data; the latter has an
-  explicit redistribution restriction. [JAXA site policy](https://global.jaxa.jp/policy.html)
-  also applies. The [registration page](https://www.eorc.jaxa.jp/ptree/registration_top.html)
-  additionally states redistribution restrictions and asks users to contact the
-  secretariat before publicly releasing research results. These instructions
-  require clarification for our specific processed product; no permission is
-  inferred here. Confirm the specific PAR product/version and derived-data
-  redistribution before publication. Do not blanket-label PAR or its derived
-  results MIT/CC0, or infer that every PAR product is categorically prohibited.
+- **PAR:** original Himawari-derived PAR was supplied by JAXA's P-Tree System.
+  The authors prepared municipal 10-minute time series and accompanying
+  imputation flags. The project adopts the [JAXA research-data
+  policy](https://earth.jaxa.jp/en/data/policy/index.html) as the sharing basis for
+  these derivatives, with source attribution and processing disclosure. This
+  is the authors' policy interpretation, not individual JAXA approval. Retain
+  the credit and policy link in `THIRD_PARTY_NOTICES.md`; do not apply the
+  code's MIT license to these data. Raw gridded products are not bundled.
 - **Power:** Taiwan Power Company, [generation](https://data.gov.tw/en/datasets/37331)
   and [regional flows](https://data.gov.tw/en/datasets/37326), whose provider
   pages list Open Government Data License 1.0. Retain provider attribution and
@@ -292,8 +291,7 @@ reconstruction of all 2024 raw inputs has not been verified.
 
 Raw PAR is available through provider registration; the author's original archive
 is temporarily unavailable on this machine. This does not prevent preparing code
-and retained intermediates. Public sharing of the processed PAR tables is a
-separate remaining decision. Before public release, finalize the package access
+and retained intermediates. Before public release, finalize the package access
 route and fixed version; do not describe the private repository or local bundle
 as already accessible to readers. Bundle and download checks verify the inputs
 used for numerical comparisons.
