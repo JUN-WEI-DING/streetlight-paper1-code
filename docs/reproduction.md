@@ -20,6 +20,20 @@ exercise the accounting interface.
 `summary.json` reports 64-light installation totals: energy in kWh, emissions in
 tonnes CO2e, and lifecycle cost in NTD. Divide by 64 for per-light values.
 
+## Choose a reproduction route
+
+Use [the bundle guide](data-bundle.md) for both executable routes. **Quick replay**
+starts with the capacity panel and scenario intermediates; **full analysis**
+recalculates capacity and sensitivity results from the processed inputs. Both
+obtain weather and county geometry separately. The bundle contains municipal PAR,
+regional AEF, cleaned power records and population weights, so readers do not need
+to collect all raw observations before using these routes.
+
+Raw-data preprocessing is a separate advanced workflow described below. It expects
+prepared study-period Taipower archives and weekly PAR Zarr stores; it is not an
+automated provider-download-to-paper workflow. Keep provider acquisition, our
+processed data, and the expected numerical answers distinct.
+
 ## External inputs
 
 | Input | Representation and units | Consumer |
@@ -33,7 +47,7 @@ tonnes CO2e, and lifecycle cost in NTD. Divide by 64 for per-light values.
 | Regional power/flow | Pipeline-produced interval-energy tables with signed flows and storage columns. | AEF and fuel/storage sensitivities |
 | Weather | Separately downloaded NASA POWER hourly UTC T2M/WS10M; use `fetch_bundle_weather.py` after bundle staging to verify study values. | PV benchmark |
 | Wind classification | External `data/power/wind_unit_classification.csv` configured by `data.wind_unit_classification_path`; unit names mapped to onshore/offshore categories. The supplied snapshot has no classification file and uses the existing prefix fallback; do not invent a mapping for reference comparison. | AEF and future-grid calculations |
-| Population | External study-year municipality mapping. | population-weighted selection |
+| Population | Processed 2024 municipal weights included in the review bundle; source ODS obtained from MOI. | population-weighted selection |
 | Intermediate results | Baseline/Pareto/selected-allocation CSVs, structured-values JSON, PV comparison JSON, figure-data tables. | supplementary summaries |
 
 Naive timestamps are treated as UTC by the lighting implementation. Use

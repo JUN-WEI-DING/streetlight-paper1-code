@@ -9,13 +9,21 @@ unit tests. Observed time series, geographic datasets, licensed LCA exports,
 manuscripts, reviewer correspondence, and paper result files are not tracked in Git.
 The synthetic example demonstrates execution; it does not reproduce the
 paper's numbers.
-A separate local review data bundle supports quick numerical replay and an
-analysis-suite rerun from processed inputs plus separately downloaded NASA weather and official county boundaries,
-including the deterministic
-cogeneration/biomass allocation sensitivity. Quick replay retains scenario
-intermediates; the full mode rebuilds the documented numerical suite.
-See [processed-data reproduction](docs/data-bundle.md) for commands, verified
-scope, and outstanding data-publication questions. The bundle is not published.
+The repository is currently private. A separate local review data bundle retains
+processed inputs, capacity-search and sensitivity results, and numerical figure
+tables; public raw source files are obtained from their providers.
+
+Two entry points are documented in [the bundle guide](docs/data-bundle.md):
+
+- **Quick replay:** reuse the 99,000-row capacity panel and scenario intermediates
+  to inspect selection, recalculate downstream values, and draw numerical figures.
+- **Analysis-suite rerun:** start from processed inputs and rerun capacity search
+  and the documented sensitivity analyses, including fuel allocation.
+
+Both routes download NASA weather and official county boundaries separately.
+Neither route reconstructs the original satellite archive or licensed LCA process
+model. The bundle is prepared locally and is not yet published. The sharing
+conditions for processed PAR are tracked separately from provider access to raw PAR.
 
 ## Run the synthetic example
 

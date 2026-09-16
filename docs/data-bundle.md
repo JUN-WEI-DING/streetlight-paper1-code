@@ -1,37 +1,49 @@
 # Processed-input and intermediate-result bundle
 
-This is a **local author-review package**, not a published dataset. The archive
-is not covered by the code's MIT license. Public redistribution of the specific
-PAR product and downstream derivatives is still unresolved; no public download
-URL or access-on-request promise is made.
+This is a **local author-review package**, not a published dataset. The source
+repository is private. The code's MIT license does not cover third-party data.
+Raw public-source files are obtained from their providers; the bundle retains
+research-generated inputs, intermediates and reference results. Sharing conditions
+for the processed municipal PAR tables remain to be clarified separately from
+registered access to the source PAR product.
 
 ## What is included
 
+The current archive contains 160 data/metadata files, plus `bundle.json`, and is
+approximately 69.4 MiB compressed. Paths are preserved from the research workflow.
 The selection is executable in `scripts/release/build_local_data_bundle.py`.
-NASA POWER API responses and the five official boundary components are omitted
-and downloaded separately. The packaging
-command reports the current file count and archive size. `bundle.json` records source
-commit, original relative paths, sizes and SHA-256 hashes. The accompanying
-`.sha256` verifies the archive. No raw satellite stores, raw download Parquet,
-licensed process database exports, manuscript, reviews, or credentials are
-included. Historic processing manifests retain original staging-path strings as
+
+| Role | Contents | Files | Use |
+|---|---|---:|---|
+| Processed input | Municipal population weights | 1 | Population-weighted selection |
+| Processed input | Seven regional AEF series and storage pools | 8 | Dispatch emissions and storage audit |
+| Input documentation | Preparation manifests and quality/provenance records | 3 | Interpret the prepared inputs |
+| Processed input | Municipal PAR and imputation flags | 2 | PV forcing and calibration |
+| Processed input and audit | Aligned regional/national power, capacity, flows and quality records | 40 | AEF, fuel/storage, marginal and input-quality analyses |
+| Analysis intermediates and reference results | Capacity panel, allocation, calibration, sensitivities and summary JSONs | 93 | Inspect selection or compare recalculated results |
+| Figure intermediates and reference results | Numerical figure source tables | 13 | Draw figures or compare regenerated tables |
+| **Total** | | **160** | |
+
+The capacity panel contains 4,500 PV/battery combinations × 22 municipalities
+(99,000 rows). It lets readers inspect candidate designs and reproduce Pareto
+selection without first repeating every dispatch simulation. The 93 analysis files
+include the three final JSON snapshots used as expected answers; these are staged
+only under `reference/`, never substituted for newly computed final outputs.
+Quick mode reuses scenario intermediates; full mode keeps analysis and figure
+references separate and recalculates them from processed inputs.
+
+`bundle.json` records the source commit, relative paths, sizes and SHA-256 hashes;
+the accompanying `.sha256` checks archive integrity. It also records requests for
+14 NASA weather cells and the five boundary components, without bundling those
+source files. Historic processing manifests retain author staging paths as
 provenance; these are not runtime paths.
 
-| Group | Purpose |
-|---|---|
-| Municipal PAR and imputation flags | PV forcing, calibration, quality audit |
-| Seven regional AEF files and storage pools | Dispatch emissions and storage audit |
-| Regional generation, national generation/capacity/categories, flow, selected quality records | Fuel/storage/static-grid/marginal analyses and audit |
-| Boundary component hashes and 2024 municipal population intermediate | Download the official geometry; retain derived population weights |
-| NASA POWER request coordinates and value hashes (no responses) | Download 14 full-year 2024 UTC responses and check their values |
-| Baseline 4,500-design × 22-city panel and compact scenario products | Capacity reselection and downstream analysis without rerunning every sweep |
-| 13 numerical figure tables and allocation-sensitivity results | Quick-mode intermediates; regenerated in full mode |
-| Three final JSON snapshots | Expected answers, kept exclusively under `reference/` |
-
-Weekly/long-format PAR duplicates, alternate scenarios' large candidate panels,
-and duplicate baseline folders are omitted. The power records make this bundle
-larger than a dispatch-only pack: the manuscript's SI quality audit consumes
-national generation/imputation records, while the marginal lens needs capacity.
+Raw satellite stores, raw Taipower downloads, the source population ODS, NASA API
+responses, county geometry, licensed process databases, manuscripts, reviewer
+correspondence and credentials are excluded. Weekly/long-format PAR duplicates,
+large alternative-scenario capacity panels and duplicate baseline folders are
+also excluded. Processed power tables remain necessary for the documented analyses
+even though their original source is public.
 
 ## Quick reproduction
 
@@ -138,6 +150,14 @@ Finally run `reproduce_from_bundle.py --full --verify-only` to compare the
 regenerated outputs without repeating the calculations.
 
 ### Verification result
+
+The delivery-description update retains all 160 payload files byte-for-byte.
+The rebuilt archive passes its checksum; quick and full staging both pass in
+fresh temporary directories, keeping final reference answers separate from working
+outputs. Quick staging retains all 99,000 capacity rows. Eleven focused
+bundle/replay/external-input tests pass. No numerical model changed, so the
+capacity sweep, numerical replay and provider downloads were not repeated for
+this documentation update. Earlier numerical validation is described below.
 
 The current 160-file bundle additionally omits all five county-boundary files.
 In a fresh temporary checkout, all 160 retained files passed size/hash checks;
@@ -253,24 +273,30 @@ every historical local file has a fully resolved redistribution chain.
   ecoinvent process database is supplied; numerical replay does not reconstruct
   the licensed background process model.
 
-## Public-source inputs and remaining decisions
+## Public-source inputs and reproduction routes
 
-Public raw observations are obtained from their providers, not redistributed by
-this package. Research-generated intermediate tables remain in the review bundle.
-
-| Input | Reader route | Exact-study limitation |
+| Source | Obtain from | Preparation / use |
 |---|---|---|
-| NASA POWER hourly weather | Stage bundle, then run `fetch_bundle_weather.py` | Current responses must match recorded parameter hashes; metadata-only differences are allowed |
-| Taipower generation and flows | Provider links below; preprocessing entry points in `docs/reproduction.md` | Full 2024 acquisition has not been verified from the current provider service. The bundle retains cleaned/aligned generation and flow intermediates, not raw download archives |
-| Municipal population | Exact MOI ODS resource, sheet/cells and checksum in `data/geo/municipal_population_2024.json` | The extracted, reordered JSON is a research input intermediate and remains included; the source ODS is not bundled |
-| County boundaries | Official dataset 7442, release 1140318; `fetch_bundle_boundaries.py` | All five components match the study hashes; geometry is omitted from the bundle |
-| PAR | Registered P-Tree access; externally prepared weekly Zarr stores | The author confirms original data are temporarily unavailable locally. Product/version, redistribution conditions and raw-to-weekly-store acquisition route remain unresolved. Processed municipal PAR remains local-review only |
+| PAR | Individual [JAXA P-Tree registration](https://www.eorc.jaxa.jp/ptree/registration_top.html) | Raw preprocessing expects weekly PAR Zarr stores; the two bundle routes instead use municipal PAR tables |
+| Taipower generation and regional power/flows | [Generation](https://data.gov.tw/en/datasets/37331), [regional power](https://data.gov.tw/en/datasets/37326) | Prepare study-period archives for the raw pipeline; the bundle retains cleaned/aligned power tables |
+| Population | MOI resource URL and sheet/cells recorded in the bundled `data/geo/municipal_population_2024.json` | The extracted municipal weights are included; the original ODS is not |
+| NASA POWER weather | `fetch_bundle_weather.py` after staging | Downloads the 14 requested 2024 hourly UTC cells |
+| County boundaries | [NLSC dataset 7442](https://data.gov.tw/dataset/7442), release 1140318; `fetch_bundle_boundaries.py` | Downloads the five geometry components; manual ZIP input is also supported |
 
-There is no verified end-to-end public-download reconstruction of all 2024 inputs.
-The reproducible route starts from research intermediates plus downloaded weather and boundaries.
-The PAR access decision must be resolved before claiming a public,
-complete reproduction package. No source archive or manuscript availability
-statement should imply that the private review bundle is already downloadable.
+The default quick route reuses research intermediates. The advanced `--full`
+route reruns analyses from processed inputs. Both require the separately fetched
+weather and geometry. The raw-input interfaces and schemas are documented in
+[the reproduction guide](reproduction.md); acquisition and conversion of raw PAR
+to weekly stores are not automated by either bundle route. A complete fresh
+reconstruction of all 2024 raw inputs has not been verified.
+
+Raw PAR is available through provider registration; the author's original archive
+is temporarily unavailable on this machine. This does not prevent preparing code
+and retained intermediates. Public sharing of the processed PAR tables is a
+separate remaining decision. Before public release, finalize the package access
+route and fixed version; do not describe the private repository or local bundle
+as already accessible to readers. Bundle and download checks verify the inputs
+used for numerical comparisons.
 
 ## Author-side packaging
 
