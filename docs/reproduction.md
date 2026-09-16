@@ -6,8 +6,8 @@ Use the README's locked Python 3.12 environment from this checkout. Python 3.11
 is also permitted by the dependency specification; validation here uses 3.12.
 The artificial example and unit tests run without study data. They validate
 software behavior, not agreement with observed Taiwan results. The separate [public data bundle](data-bundle.md) supplies processed inputs
-and intermediates for an independently tested replay. It has no public download
-URL yet; no access-on-request arrangement is promised.
+and intermediates for an independently tested replay. The bundle is publicly available in
+[release v1.0.0](https://github.com/JUN-WEI-DING/streetlight-paper1-code/releases/tag/v1.0.0).
 
 The example generates 288 UTC timestamps at 10-minute intervals, sinusoidal PV,
 a 6.4 kW night load, and artificial AEF. Its fixed-hour Asia/Taipei schedule does
