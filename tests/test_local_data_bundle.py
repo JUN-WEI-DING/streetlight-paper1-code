@@ -34,3 +34,16 @@ def test_allocation_references_required_and_historical_qa_excluded(tmp_path):
     (tmp_path / allocation / 'scenario_summary.csv').unlink()
     with pytest.raises(FileNotFoundError, match='scenario_summary.csv'):
         bundle.selected_files(tmp_path)
+
+
+def test_portable_metadata_changes_only_machine_paths():
+    import json
+    original = {'source_path': '/mnt/example/observations.parquet',
+                'nested': [{'path': '/home/example/weekly', 'count': 50892}],
+                'url': 'https://example.org/data', 'relative': 'data/inputs.csv'}
+    data = json.dumps(original).encode()
+    result = json.loads(bundle.portable_metadata(data))
+    assert result == {**original, 'source_path': 'external-inputs/observations.parquet',
+                      'nested': [{'path': 'external-inputs/weekly', 'count': 50892}]}
+    untouched = b'{"value": 3.56, "path": "data/inputs.csv"}\n'
+    assert bundle.portable_metadata(untouched) == untouched

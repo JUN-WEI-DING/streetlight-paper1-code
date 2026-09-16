@@ -47,6 +47,21 @@ def selected_files(root):
     return sorted(paths)
 
 
+def portable_metadata(data):
+    """Remove author-machine paths from provenance JSON, leaving values intact."""
+    def clean(value):
+        if isinstance(value, dict):
+            return {key: clean(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [clean(item) for item in value]
+        if isinstance(value, str) and value.startswith(('/home/', '/mnt/', '/media/', '/Users/')):
+            return 'external-inputs/' + Path(value).name
+        return value
+    original = json.loads(data)
+    cleaned = clean(original)
+    return data if cleaned == original else (json.dumps(cleaned, indent=2) + '\n').encode()
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', type=Path, required=True)
@@ -85,12 +100,16 @@ def main():
             tar.addfile(info, io.BytesIO(data))
         for path in paths:
             relative = path.relative_to(root).as_posix()
-            data = path.read_bytes()
+            original = path.read_bytes()
+            data = portable_metadata(original) if path.suffix == '.json' else original
             # Immutable expected answers live apart from executable work paths.
             name = f'reference/{relative}'
             records.append({'path': name, 'source_path': relative,
                             'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest(),
                             'role': 'expected_answer' if path.name in FINAL else 'input_or_intermediate'})
+            if data != original:
+                records[-1]['source_sha256'] = hashlib.sha256(original).hexdigest()
+                records[-1]['transformation'] = 'Author-machine paths replaced with external-inputs/<basename>.'
             write(name, data)
         commit = subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True).strip()
         manifest = {'schema_version': 2, 'status': 'LOCAL_AUTHOR_REVIEW_NOT_PUBLISHED',

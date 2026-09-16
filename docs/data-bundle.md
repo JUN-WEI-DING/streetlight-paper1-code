@@ -37,8 +37,10 @@ references separate and recalculates them from processed inputs.
 `bundle.json` records the source commit, relative paths, sizes and SHA-256 hashes;
 the accompanying `.sha256` checks archive integrity. It also records requests for
 14 NASA weather cells and the five boundary components, without bundling those
-source files. Historic processing manifests retain author staging paths as
-provenance; these are not runtime paths.
+source files. Author-machine paths in three provenance JSON files are replaced
+with `external-inputs/<basename>` labels; these are not runtime paths. Their
+original byte hashes and the transformation are recorded in `bundle.json`.
+Scientific values and the canonical research files are unchanged.
 
 Raw satellite stores, raw Taipower downloads, the source population ODS, NASA API
 responses, county geometry, licensed process databases, manuscripts, reviewer
