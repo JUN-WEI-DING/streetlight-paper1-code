@@ -32,7 +32,7 @@ tonnes CO2e, and lifecycle cost in NTD. Divide by 64 for per-light values.
 | Satellite | Weekly PAR Zarr stores checked by `check_par_weekly_root.py`, with time/latitude/longitude coordinates. | PAR aggregation |
 | Regional power/flow | Pipeline-produced interval-energy tables with signed flows and storage columns. | AEF and fuel/storage sensitivities |
 | Weather | Validated NASA POWER hourly UTC T2M/WS10M cache; explicit `--fetch-weather` for download. | PV benchmark |
-| Wind classification | External `data/power/wind_unit_classification.csv` configured by `data.wind_unit_classification_path`; unit names mapped to onshore/offshore categories. Preserve the study mapping for comparable AEF. | AEF and future-grid calculations |
+| Wind classification | External `data/power/wind_unit_classification.csv` configured by `data.wind_unit_classification_path`; unit names mapped to onshore/offshore categories. The supplied snapshot has no classification file and uses the existing prefix fallback; do not invent a mapping for reference comparison. | AEF and future-grid calculations |
 | Population | External study-year municipality mapping. | population-weighted selection |
 | Intermediate results | Baseline/Pareto/selected-allocation CSVs, structured-values JSON, PV comparison JSON, figure-data tables. | supplementary summaries |
 

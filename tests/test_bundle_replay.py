@@ -40,3 +40,43 @@ def test_replay_refuses_preloaded_answers(tmp_path, monkeypatch):
     monkeypatch.setattr(replay, 'ROOT', tmp_path)
     with pytest.raises(FileExistsError, match='absent generated answers'):
         replay.replay()
+
+
+def test_full_stage_keeps_results_as_references_only(tmp_path, monkeypatch):
+    import hashlib
+    import json
+    root = tmp_path / 'checkout'
+    root.mkdir()
+    archive = tmp_path / 'bundle.tar.gz'
+    paths = [str(replay.RESULTS / 'pareto/results.csv'),
+             'outputs/paper_assets/paper1/figure_data/f5.csv',
+             'outputs/final_runs/paper1_canonical_inputs/par/par_wide.csv',
+             'outputs/qa/cogen_biomass_sensitivity.csv']
+    records = []
+    with tarfile.open(archive, 'w:gz') as tar:
+        for path in paths:
+            data = b'x\n1\n'
+            info = tarfile.TarInfo('reference/' + path)
+            info.size = len(data)
+            tar.addfile(info, io.BytesIO(data))
+            records.append({'path': info.name, 'source_path': path, 'bytes': len(data),
+                            'sha256': hashlib.sha256(data).hexdigest(), 'role': 'input_or_intermediate'})
+        data = json.dumps({'files': records}).encode()
+        info = tarfile.TarInfo('bundle.json')
+        info.size = len(data)
+        tar.addfile(info, io.BytesIO(data))
+    monkeypatch.setattr(replay, 'ROOT', root)
+    replay.stage(archive, full=True)
+    for path in paths:
+        assert (root / 'reference' / path).exists()
+    assert not (root / replay.RESULTS).exists()
+    assert not (root / 'outputs/paper_assets').exists()
+    assert (root / paths[2]).exists()
+    assert (root / paths[3]).exists()  # Explicit historical QA exception.
+
+
+def test_full_rerun_rejects_staged_old_intermediates(tmp_path, monkeypatch):
+    (tmp_path / replay.RESULTS / 'pareto').mkdir(parents=True)
+    monkeypatch.setattr(replay, 'ROOT', tmp_path)
+    with pytest.raises(FileExistsError, match='absent analysis outputs'):
+        replay.replay(full=True)

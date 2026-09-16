@@ -9,7 +9,9 @@ unit tests. Observed time series, geographic datasets, licensed LCA exports,
 manuscripts, reviewer correspondence, and paper result files are not tracked in Git.
 The synthetic example demonstrates execution; it does not reproduce the
 paper's numbers.
-A separate local review data bundle now supports numerical replay of the study.
+A separate local review data bundle supports quick numerical replay and an
+analysis-suite rerun from processed inputs. One historical SI allocation-sensitivity
+table remains frozen; neither mode rebuilds every experiment.
 See [processed-data reproduction](docs/data-bundle.md) for commands, verified
 scope, and outstanding data-publication questions. The bundle is not published.
 
@@ -50,7 +52,9 @@ Exported from private research commit
 The 25 package source files are retained byte-for-byte. Analysis scripts retain
 their algorithms; the three raw-input command-line tools require explicit input
 paths instead of defaulting to the author's machine. The value builder adds a
-base-only phase to remove the PV/uncertainty dependency cycle; new standalone
+base-only phase to remove the PV/uncertainty dependency cycle; calibration
+robustness converts datetime differences explicitly to hours across timestamp
+resolutions; new standalone
 entries stage and verify a data bundle and regenerate numerical figures.
 The manuscript-value builder is retained because it implements regression, selection, discount-rate,
 and battery-lifetime calculations. Its older table/token formatting is not a

@@ -29,7 +29,8 @@ def _threshold_factor_sensitivity(summary: dict, thresholds: list[float]) -> pd.
     index = pd.to_datetime(par_wide.index)
     if len(index) < 2:
         raise ValueError("par_wide.csv must contain at least two timestamps for calibration robustness")
-    dt_hours = np.median(np.diff(index.view("int64"))) / 3.6e12
+    # DatetimeIndex may store microseconds or nanoseconds depending on pandas.
+    dt_hours = float(np.median(np.diff(index.to_numpy()) / np.timedelta64(1, "h")))
     annual_par_integral = par_wide.fillna(0.0).sum(axis=0) * dt_hours
     n_lights = float(summary["n_lights"])
     light_power_kw = float(summary["light_power_kw"])

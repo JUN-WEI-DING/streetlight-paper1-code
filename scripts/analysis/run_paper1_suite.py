@@ -19,6 +19,7 @@ consume that bundle rather than hand-maintained numbers.
 
 from __future__ import annotations
 
+import argparse
 import json
 import time
 from typing import Callable
@@ -51,7 +52,7 @@ def _run_step(name: str, fn: Callable[[], None]) -> dict[str, float | str]:
     }
 
 
-def main() -> None:
+def main(*, start_at: str | None = None) -> None:
     cfg = get_config()
     output_dir = cfg.paper_output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -85,17 +86,26 @@ def main() -> None:
         ("manuscript_results_snapshot", build_manuscript_results_snapshot),
     ]
 
-    step_results = [_run_step(name, fn) for name, fn in steps]
-    manifest = {
-        "runner": "run_paper1_suite.py",
-        "paper_output_dir": repo_display_path(output_dir),
-        "steps": step_results,
-    }
-    (output_dir / "paper1_suite_manifest.json").write_text(
-        json.dumps(manifest, indent=2, ensure_ascii=False),
-        encoding="utf-8",
-    )
+    names = [name for name, _ in steps]
+    if start_at is not None and start_at not in names:
+        raise ValueError(f'Unknown step {start_at}; choose from {names}')
+    start = names.index(start_at) if start_at else 0
+    step_results = []
+    for name, fn in steps[start:]:
+        step_results.append(_run_step(name, fn))
+        manifest = {
+            "runner": "run_paper1_suite.py",
+            "paper_output_dir": repo_display_path(output_dir),
+            "start_at": start_at,
+            "complete": name == steps[-1][0],
+            "steps": step_results,
+        }
+        (output_dir / "paper1_suite_manifest.json").write_text(
+            json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--start-at", help="Resume at a named step; retain previously generated upstream outputs")
+    main(start_at=parser.parse_args().start_at)

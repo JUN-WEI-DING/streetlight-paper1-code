@@ -92,37 +92,84 @@ Legacy `f7`/`f8` and `figS*` filenames identify supplemental numerical sources,
 not Figures 7 and 8 in the six-figure EIAR main manuscript. Their CSVs are
 included; the manuscript's exact editorial layouts are not claimed reproduced.
 
-## Recompute the computationally expensive layers
+## Rerun the analysis suite from processed inputs
 
-Use another fresh checkout, stage without quick replay, then run the existing
-analysis entries. Explicitly pin the root because parent directories can contain
-unrelated Git repositories:
+In a fresh checkout, use the same archive with `--full`:
 
 ```bash
 uv run --locked python scripts/analysis/reproduce_from_bundle.py \
-  --archive /absolute/path/to/paper1-data-review.tar.gz --stage-only
-export STREETLIGHT_ROOT="$PWD"
-export STREETLIGHT_CONFIG=config/paper_baseline.yaml
-uv run --locked python scripts/analysis/run_paper_baseline.py
+  --archive /absolute/path/to/paper1-data-review.tar.gz --full
 ```
 
-This recomputes calibration, full dispatch/capacity search and baseline outputs
-from processed inputs. It does not redo the raw satellite or raw Taipower
-preprocessing. `run_paper1_suite.py` runs the older full suite, including full
-alternative sweeps; see `docs/reproduction.md` for individual entries. It is
-computationally expensive and was **not run for this handoff**. Check resources
-and run long jobs with persistent logging before choosing that route.
+This mode leaves bundled analysis results and figure tables exclusively under
+`reference/`. It stages processed inputs, geometry, weather and the explicitly
+identified historical QA table. It reruns the full capacity search, alternative
+methods, future static grid states, sensitivities, economic analyses, PV
+comparison and conditional uncertainty; it rebuilds all 13 numerical figure
+source tables. Numerical JSON outputs, all bundled result CSVs and all figure
+source CSVs are compared with the preserved references at `rtol=atol=1e-8`.
+The same `outputs/reproduction/verification.json` records differences and scope.
+This is a processed-input reconstruction, not raw satellite/power processing or
+licensed SimaPro background-model reconstruction. Figure layouts are simplified.
 
-Do not label a suite run alone as complete EIAR reconstruction: it predates PV
-and conditional analyses; the complete supplemental table/figure transformation
-sequence is not yet extracted from the private editorial workflow. Quick replay
-has explicitly identified frozen inputs for these stages.
+Run long jobs in tmux and retain console output. The suite writes timing/progress
+after each successful stage. If a stage fails, inspect the cause before resuming:
 
-The optional wind-classification path is absent in the source snapshot. The
-calculator uses its existing prefix fallback. The storage audit in quick replay
-checks the resulting baseline against the frozen AEF. Preserve this behavior
-for comparison; a new onshore/offshore mapping would be a changed scientific
-input. Full future-grid rerun agreement remains unverified.
+```bash
+export STREETLIGHT_ROOT="$PWD"
+export STREETLIGHT_CONFIG=config/paper_baseline.yaml
+uv run --locked python scripts/analysis/run_paper1_suite.py --start-at STEP_NAME
+```
+
+Resuming requires the earlier generated stages to remain in place; it does not
+make a partial run independently complete. After the suite, the downstream order
+is `rebuild_core_figure_data.py`, `rebuild_supplementary_figure_data.py`,
+`build_paper1_manuscript_values.py --base-only`, `paper1_pv_benchmark.py`,
+`paper1_conditional_uncertainty.py`, then `build_paper1_manuscript_values.py`.
+Finally run `reproduce_from_bundle.py --full --verify-only` to compare the
+regenerated outputs without repeating the calculations.
+
+### Verification result and reference discrepancy
+
+The isolated suite run recomputed 99,000 baseline design/city rows. All 8,829
+checked final JSON numerical fields and all 13 numerical figure tables agreed
+with the frozen references. Across 75 figure/result CSV comparisons, 74 agreed.
+The suite took approximately 13 minutes on the author's workstation; downstream
+PV, uncertainty and comparison work is additional.
+
+One reference difference remains intentionally visible:
+`calibration_robustness/threshold_factor_sensitivity.csv`, column
+`mean_annual_lighting_hours`. The stored reference contains 4.4086–4.5453;
+recomputation gives 4408.6212–4545.3030 hours. All other columns agree. The old
+calculation divided raw datetime integers by a nanosecond constant; microsecond
+storage reproduces the factor-of-1000 error. The standalone entry now converts
+timedeltas explicitly to hours, with tests for both timestamp resolutions.
+The final manuscript-value objects are unchanged. The reference archive and
+private manuscript/results were not overwritten. Therefore full verification
+returns a failing exit status for this known reference discrepancy; it is not
+silently accepted or hidden by changing tolerance. Review and correct the
+canonical reference before describing the entire comparison as passing.
+
+### Historical allocation-sensitivity exception
+
+`outputs/qa/cogen_biomass_sensitivity.csv` is a frozen eight-scenario,
+five-region QA analysis. Its regional mean AEF values were stored to four decimal
+places. Current EIAR SI Table S18 (last row) uses its -0.48 / +0.03%
+AEF range, and the value builder recalculates
+that range from the table. No producer was found in the inspected current or
+retired analysis scripts. Git history identifies the table as an imported release
+artifact, without a producer linked alongside it. Current processed
+inputs use seven reporting regions and revised regional allocation assumptions.
+Recomputing an analysis on those inputs would be a new sensitivity result, not
+proof that this historical table was reproduced. Both replay modes retain this
+explicit frozen exception. Do not describe either as recomputing every SI
+experiment, even when numerical comparison passes. Resolving it requires the
+original producer/input version, or an author-reviewed replacement analysis and
+corresponding SI/reviewer-response update.
+
+The optional wind-classification path is absent in the source snapshot. Preserve
+the calculator's existing prefix fallback when comparing with reference results;
+adding a new mapping changes scientific inputs.
 
 ## Data origins and publication status
 
