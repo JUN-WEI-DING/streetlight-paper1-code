@@ -3,13 +3,13 @@
 Research code for *A dispatch-aware framework for resource-efficient distributed
 electrification: A case study of photovoltaic-battery streetlights*.
 
-This is an independent source repository prepared for author review. It contains the
+This is the independent public source repository for the study. It contains the
 calculation methods, study configuration, synthetic examples, and independent
 unit tests. Observed time series, geographic datasets, licensed LCA exports,
 manuscripts, reviewer correspondence, and paper result files are not tracked in Git.
 The synthetic example demonstrates execution; it does not reproduce the
 paper's numbers.
-The repository is currently private. A separate local review data bundle retains
+The [v1.0.0 release](https://github.com/JUN-WEI-DING/streetlight-paper1-code/releases/tag/v1.0.0) provides code and a companion data bundle containing
 processed inputs, capacity-search and sensitivity results, and numerical figure
 tables; public raw source files are obtained from their providers.
 
@@ -22,13 +22,13 @@ Two entry points are documented in [the bundle guide](docs/data-bundle.md):
 
 Both routes download NASA weather and official county boundaries separately.
 Neither route reconstructs the original satellite archive or licensed LCA process
-model. The bundle is prepared locally and is not yet published.
+model. Code and data are publicly downloadable without login.
 Processed municipal PAR is retained with JAXA/P-Tree attribution under the
 project’s adopted interpretation of the JAXA research-data policy; see the
 third-party notices for processing and source terms.
 
-The [release draft](docs/release-draft.md) describes the candidate artifacts,
-data attribution, and publication handoff.
+The [release details](docs/release-draft.md) identify the fixed code revision,
+artifacts and data attribution.
 
 ## Run the synthetic example
 

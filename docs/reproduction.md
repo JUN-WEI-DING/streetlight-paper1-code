@@ -5,7 +5,7 @@
 Use the README's locked Python 3.12 environment from this checkout. Python 3.11
 is also permitted by the dependency specification; validation here uses 3.12.
 The artificial example and unit tests run without study data. They validate
-software behavior, not agreement with observed Taiwan results. The separate [local review bundle](data-bundle.md) supplies processed inputs
+software behavior, not agreement with observed Taiwan results. The separate [public data bundle](data-bundle.md) supplies processed inputs
 and intermediates for an independently tested replay. It has no public download
 URL yet; no access-on-request arrangement is promised.
 
@@ -108,7 +108,7 @@ changing manuscript table numbers.
 
 The suite predates some supplementary additions and does not call every newer
 PV/quality/conditional analysis. The value builder consumes derived figure tables supplied in the separate
-local review bundle. The standalone replay regenerates the core Figure 2–4
+public data bundle. The standalone replay regenerates the core Figure 2–4
 tables and uses frozen supplemental scenario tables as upstream inputs. Its
 base-only phase breaks the PV/uncertainty dependency cycle. See the bundle guide
 for exact commands and scope: quick replay is not a full rerun of every scenario.

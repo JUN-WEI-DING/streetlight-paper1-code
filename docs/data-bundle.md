@@ -1,7 +1,6 @@
 # Processed-input and intermediate-result bundle
 
-This is a **local author-review package**, not a published dataset. The source
-repository is private. The code's MIT license does not cover third-party data.
+The processed-input package is publicly available in [release v1.0.0](https://github.com/JUN-WEI-DING/streetlight-paper1-code/releases/tag/v1.0.0). The code's MIT license does not cover third-party data.
 Raw public-source files are obtained from their providers; the bundle retains
 research-generated inputs, intermediates and reference results.
 Processed municipal PAR is retained with JAXA/P-Tree attribution under the
@@ -293,9 +292,8 @@ reconstruction of all 2024 raw inputs has not been verified.
 
 Raw PAR is available through provider registration; the author's original archive
 is temporarily unavailable on this machine. This does not prevent preparing code
-and retained intermediates. Before public release, finalize the package access
-route and fixed version; do not describe the private repository or local bundle
-as already accessible to readers. Bundle and download checks verify the inputs
+and retained intermediates. Release v1.0.0 supplies the retained intermediates
+and fixed code revision for readers. Bundle and download checks verify the inputs
 used for numerical comparisons.
 
 ## Author-side packaging

@@ -6,9 +6,8 @@ its own license; installed versions are recorded in `uv.lock`.
 
 No Himawari observations, Taipower time series, administrative boundary files,
 municipal population tables, weather cache, or SimaPro/ecoinvent process exports
-are tracked in this source repository. A separate local author-review bundle
-contains processed input snapshots, intermediates and reference results; it has
-not been published. Raw public-source files are obtained from their providers.
+are tracked in this source repository. The companion data bundle in public release v1.0.0
+contains processed input snapshots, intermediates and reference results. Raw public-source files are obtained from their providers.
 The project uses the JAXA research-data policy as the basis for sharing processed
 municipal PAR, as described below.
 See [data origins and publication status](docs/data-bundle.md).

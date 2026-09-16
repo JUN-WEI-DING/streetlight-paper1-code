@@ -1,110 +1,45 @@
-# EIAR reproducibility release — author-review draft
+# Paper 1 reproducibility release v1.0.0
 
-Status: prepared for author review; repository remains private. This document
-is a release draft; the data-sharing basis and attribution are described below.
-The reviewed candidate is identified by its exact Git commit in
-`dist/release-review.md`; a public release tag has not been created.
+[Public release and downloads](https://github.com/JUN-WEI-DING/streetlight-paper1-code/releases/tag/v1.0.0)
 
-## Proposed fixed release
+Fixed code commit: `e42c221b07a66b2d9d181792837c5e488e777de2`.
+Data-source commit: `f3854c3ce52cdec348691024059cd98a267c2104`.
+The research release is v1.0.0; the Python package version is 0.1.0.
 
-- Repository: `JUN-WEI-DING/streetlight-paper1-code`.
-- Proposed tag: `v1.0.0` (research reproduction snapshot; Python package remains `0.1.0`).
-- Title: `Paper 1 reproducibility materials v1.0.0`.
-- Target: exact code commit and asset SHA-256 values in `dist/release-review.md`.
-- Upload exactly four assets: `paper1-code.tar.gz`, `paper1-code.tar.gz.sha256`,
-  `paper1-data-review.tar.gz`, `paper1-data-review.tar.gz.sha256`.
-- Keep the current asset names so documented replay commands remain valid.
-- `release-review.md` is the local author handoff, not an upload asset.
+## Download assets
 
-Planned URLs (not yet published):
+- `paper1-code.tar.gz`: 92 source files from the fixed code commit.
+- `paper1-data-review.tar.gz`: 160 scientific/provenance payloads, `bundle.json`
+  and a third-party notice.
+- Each archive has its own `.sha256` file; verify before extraction.
 
-- Release: https://github.com/JUN-WEI-DING/streetlight-paper1-code/releases/tag/v1.0.0
-- Data: https://github.com/JUN-WEI-DING/streetlight-paper1-code/releases/download/v1.0.0/paper1-data-review.tar.gz
-- Code: https://github.com/JUN-WEI-DING/streetlight-paper1-code/releases/download/v1.0.0/paper1-code.tar.gz
+The filenames and archive contents preserve the author-reviewed snapshot.
+Private/local status wording inside that snapshot describes preparation; the
+release and all four attachments are now public. The default branch documentation
+reflects publication. Use the tagged code or source archive for reproducibility.
 
-## Release description
+The data archive retains municipal PAR and imputation flags, AEF and power inputs,
+population weights, the 99,000-row capacity panel, sensitivity results and 13
+numerical figure tables. Three provenance JSON files replace six author-machine
+paths with portable labels and preserve their original hashes. Scientific values
+are unchanged. Raw public-source products and licensed LCA process databases are
+not bundled. Follow [the bundle guide](data-bundle.md) for quick replay or the
+analysis-suite rerun and separate weather/boundary downloads.
 
-This independent repository contains the implementation and study configuration
-for the dispatch-aware PV–battery streetlight analysis, a synthetic example,
-and reproducibility entry points. Original code and documentation use MIT;
-third-party data retain their source-specific terms.
+## Source terms
 
-The local companion data archive contains 160 scientific/provenance files, plus
-`bundle.json` and a third-party notice: processed municipal PAR,
-AEF and power inputs, population weights, capacity and sensitivity results, and
-13 numerical figure tables. The capacity panel has 99,000 rows (4,500 designs
-across 22 municipalities). Raw public-source files and licensed LCA process
-databases are not distributed in this archive. NASA weather and county geometry
-are obtained separately using the supplied commands.
+Original code and documentation use MIT; data retain source-specific terms.
+Processed PAR carries JAXA/P-Tree attribution and processing descriptions under
+the project's adopted [JAXA research-data policy](https://earth.jaxa.jp/en/data/policy/index.html)
+interpretation, not individual JAXA approval. See [third-party notices](../THIRD_PARTY_NOTICES.md).
 
-Quick replay reuses capacity and scenario intermediates to recompute selection
-and downstream results. Full analysis reruns the documented suite from processed
-inputs. Neither route is a verified reconstruction from all original observations
-or a licensed SimaPro process-model rebuild. Commands and validation scope are
-in [data-bundle.md](data-bundle.md).
+## Verification
 
-## Review files
-
-All generated files are under the existing ignored `dist/` directory:
-
-- `paper1-code.tar.gz`: source snapshot from the candidate Git commit.
-- `paper1-data-review.tar.gz`: complete local review data package; publication
-  awaits the author-approved release.
-- Each archive has its own `.sha256` checksum file.
-- `release-review.md`: exact candidate commit, data-source commit, archive sizes,
-  checksums and validation summary for the author's review.
-
-Extract the source archive, install with `uv sync --locked --extra pv-benchmark`,
-and follow the quick/full commands in `docs/data-bundle.md`. Both routes require
-the complete data package plus separately fetched weather and geometry. The
-synthetic example runs without study observations.
-
-## PAR sharing basis
-
-The project adopts the [JAXA Terms of Use of Research
-Data](https://earth.jaxa.jp/en/data/policy/index.html) as the basis for sharing
-the processed municipal PAR tables and derived research results, with attribution
-and processing disclosure. This is the authors' policy interpretation and does
-not represent individual JAXA approval. A separate permission request is not a
-release prerequisite under this adopted approach.
-
-Retain both municipal PAR and imputation-flag tables. Credit the original PAR
-product to JAXA's P-Tree System and identify the authors' municipal aggregation
-and missing-value treatment at 10-minute resolution. Include the policy link
-and the notice in `THIRD_PARTY_NOTICES.md` with the data archive. Raw public-source
-products remain available from their providers and are not bundled. Data terms
-remain separate from the code's MIT license.
-
-## Proposed GitHub release text
-
-The following text is prepared for publication after author approval:
-
-> Reproducibility materials for *A dispatch-aware framework for resource-efficient
-> distributed electrification: A case study of photovoltaic-battery streetlights*.
->
-> The source archive contains the implementation, study configuration, synthetic
-> example and replay commands. The companion data archive contains processed
-> municipal inputs, the 99,000-row capacity panel, sensitivity results and 13
-> numerical figure tables. Download both archives and their SHA-256 files.
->
-> Quick replay reuses analysis intermediates; the full route reruns the documented
-> analyses from processed inputs. Follow `docs/data-bundle.md` in the source
-> archive to stage the data and separately obtain NASA weather and county
-> boundaries. Raw satellite products and licensed LCA process databases are not
-> included; this is not a complete raw-observation or SimaPro reconstruction.
->
-> Original code uses MIT. Data retain their source-specific terms. Processed PAR
-> carries JAXA/P-Tree attribution and the project's adopted JAXA research-data
-> policy basis. See `THIRD_PARTY_NOTICES.md` and `bundle.json` for provenance.
-
-## Publication handoff
-
-After author approval, publish the reviewed commit as `v1.0.0` with the four
-listed assets and verify anonymous downloads and checksums. Any source change
-after this review requires refreshed source-archive checksums and a new target
-commit before tagging. Update publication-status wording as appropriate and
-replace manuscript, SI and R2C14 access
-placeholders with the actual accessible URLs and fixed version. Verify access
-without authentication. Keep data licensing separate from the code's MIT license.
-Graphical-abstract revision and final submission proofing are separate remaining
-editorial tasks; this release draft does not mark them complete.
+GitHub-reported SHA-256 digests for all four attachments match the reviewed
+local files. Anonymous access was checked with full downloads of the source
+archive and checksum files, and a matching prefix download of the data archive.
+The slow full data re-download was stopped; its full-file integrity check uses
+the GitHub-reported digest. The tag points to the reviewed code commit.
+Twelve focused tests and both archive-staging routes passed before publication.
+Publication does not add a fresh numerical analysis run or establish complete
+raw-observation or licensed SimaPro reconstruction.
