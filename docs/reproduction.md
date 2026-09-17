@@ -117,14 +117,33 @@ Historical rendering tokens remain for compatibility, not as an editorial workfl
 ## Scientific settings that must remain explicit
 
 - Runtime calibration determines the PAR-to-kW coefficient. The study's effective
-  value was 0.0077; YAML 0.0081 is a fallback. Inspect `paper_contract.json`.
+  value was 0.0077 kW per PAR unit at solar factor 1, calibrated before the
+  PAR–AEF intersection; YAML 0.0081 is a fallback. Inspect `paper_contract.json`.
 - The installation has 64 lights × 0.1 kW. Selected study factors 1.85/8.45 imply
-  about 0.52 kWp PV and 1.32 kWh battery per light; these differ from the demo.
+  0.5203125 kWp PV and 1.3203125 kWh battery per light; these differ from the demo.
+  PV capacity is `18 * solar_factor` kW; battery capacity is
+  `10 * battery_factor` kWh and power is `min(5 * battery_factor, 9.6)` kW
+  per installation (9.6 kW, or 0.15 kW per light, at the selected design).
+- Reproduce the exact factor sequences: solar `0.25 + 0.2*i`, `i=0,...,49`;
+  battery `0.25 + 0.2*j`, `j=0,...,89`. In `run_paper_baseline.py`, rounded
+  interval counts produce endpoints 10.05 and 18.05 despite YAML bounds 10
+  and 18. These give 4,500 designs and 99,000 municipality–design rows.
+- Lighting draws 6.4 kW at solar zenith ≥90.833° and zero otherwise. Storage
+  uses the full `[0, capacity]` SOC range and charge/discharge efficiencies
+  `sqrt(0.90)`. There is no further depth-of-discharge factor, self-discharge,
+  grid charging, surplus credit, spin-up, terminal-SOC constraint or terminal
+  credit. Charging and discharging are mutually exclusive.
 - The sweep compares `max(load − PV, 0)` before storage against imports after
   storage. Legacy keys named `grid_only` do not by themselves establish a
-  full-load/no-PV comparison. Separate full-load diagnostics use another boundary.
+  full-load/no-PV comparison. `compute_city_emission` stores this deficit under
+  the grid-only-import label; `streetlight_sim` uses the separate full-load
+  comparator. Use the stored Pareto rows for the reported selected allocation.
+  In the PV-profile check, removing below-horizon PV changes the comparator
+  by at most 0.00017493 tCO2e and 0.818305 NTD per installation
+  (2.733 gCO2e and USD 0.000398 per light); it is not exactly full load.
 - The sweep starts at zero SOC; a separate diagnostic has `init_soc=0.5`.
-  Exporting code must not silently harmonize those historical defaults.
+  That diagnostic uses the 10 kWh reference battery, not the selected 84.5 kWh
+  installation. Exporting code must not harmonize those historical defaults.
 - The study's common 50,892 ten-minute samples use scaling
   `20 * 8760 / (50892 / 6)`. There is no annual SOC reset or elapsed-gap loss
   simulation in that scaling.
@@ -135,6 +154,90 @@ Historical rendering tokens remain for compatibility, not as an editorial workfl
 - Conditional uncertainty samples four cost inputs separately within each PV
   model × battery-life condition. It does not assign a joint probability to
   future physical conditions.
+
+## Staged audit and original-run traceability
+
+Staged dispatch reads `outputs/final_runs/paper1_canonical_inputs/par/par_wide.csv`
+and the seven regional CSVs under the same root's `aef/`. Quality/storage audits
+also need the matching `power/` tables, `aef/storage_pools.csv`, preparation
+reports, flags and manifests. Retain the input hashes with results. The original
+run recorded uncommitted source changes: its base Git revision alone does not
+identify the executed source. Source hashes and agreement with frozen outputs
+identify the staged replay. The public locked environment supports the documented
+routes; it is not a recovered lockfile for that original raw-input run.
+
+The staged AEF audit records 105,565 flagged generation cells over 589 timestamps
+(568 restored timestamps and 21 partially missing rows). The low-generation
+screen rejects 10,388 source rows across 59 timestamps; three timestamps are
+interpolated and none survives final alignment. Flow preparation removes 63
+all-zero regional timestamps, averages one duplicate and excludes one off-grid
+output timestamp; rounding permits a two-minute distance from a ten-minute grid
+point. Legacy storage-pool magnitudes convert with `1/6` for MWh and `1000/6`
+for kg CO2e; these conversions preserve AEF ratios. The staged replay matches
+all seven frozen AEF series within 1e-10 kg CO2e/kWh. These are snapshot audit
+checks, not verification of a fresh reconstruction from the raw archives.
+
+## PV and conditional-sampling implementation
+
+`paper1_pv_benchmark.py` uses municipal polygon representative points at altitude
+0 m. The 22 municipalities map to 14 nearest NASA POWER grid centers
+(0.5° latitude × 0.625° longitude), each with 8,784 complete hourly UTC T2M/WS10M
+records for 2024. Each hourly mean is held over six ten-minute intervals.
+Both the horizontal and south-facing 20° cases use 1 kWp DC / 1 kW AC,
+`gamma_pdc=-0.0047` per °C, and nominal inverter efficiency 0.96 (inverter
+`pdc0=1000/0.96` W). Model settings are Erbs decomposition, Perez transposition,
+albedo 0.2, physical incidence-angle losses on direct irradiance, and no spectral
+correction. SAPM `open_rack_glass_glass` temperature parameters are `a=-3.47`,
+`b=-0.0594`, `deltaT=3` °C; this is not the complete PVWatts V5 Fuentes chain.
+
+Multiplicative loss allowances are soiling 2%, shading 3%, snow 0%, mismatch 2%,
+wiring 2%, connections 0.5%, light-induced degradation 1.5%, nameplate 1%,
+age 0% and availability 3%: 14.0757% combined before loading-dependent inverter
+loss and clipping. Irradiance and output are zeroed at geometric zenith ≥90°;
+this removes less than 0.001% of annual PAR energy in each municipality.
+First-year production is repeated over the horizon without chronological aging.
+
+`paper1_conditional_uncertainty.py` recovers alternative profiles' annual
+avoided-import changes from stored incremental-cost differences using
+32.108 NTD/USD, the 3.7556 NTD/kWh tariff and the 20-year present-worth factor at
+5%, keeping non-electricity costs fixed. Repricing the 12 deterministic cases
+agrees within 1e-8 USD per light. Each row contains four independent PCG64
+uniform draws (seed `20260914`), transformed by inverse triangular CDFs.
+The same rows serve all cases; P5/P50/P95 use linear quantiles. Nested
+2,000/10,000-row prefixes are compared with the primary 50,000 rows; an independent
+50,000-row check uses seed `20260915`. The maximum cost/MAC quantile differences
+are respectively 4.146 USD per light / 1.165 USD/tCO2e at 2,000 rows,
+1.142 / 0.337 at 10,000, and 0.705 / 0.218 for the independent seed.
+Parameters, source hashes and full checks are in `pv_model_comparison.json`
+and `conditional_uncertainty.json`.
+
+## Result lookup and licensed foreground boundary
+
+Final reference JSONs are staged under
+`reference/outputs/final_runs/paper1_canonical_results/`; recalculated JSONs use
+the corresponding `outputs/` path. In `paper1_manuscript_values.json`, use:
+
+| JSON field | Contents / checkpoint |
+|---|---|
+| `values.timestamp_scaling` | 50,892 common timestamps; 8,482 modeled hours; scale 20.6555057769 |
+| `values.frontier.knee`, `values.battery_lifetime` | Selected factors 1.85/8.45; mean per-light operational abatement 4.5765305224 tCO2e, net lifecycle abatement 3.5584596948 tCO2e and incremental cost 1,020.5284958 USD |
+| `values.regression`, `values.regression.sensitivity` | Full-precision coefficients, correlations, partial R² and variance decompositions for ten comparison sets, including regional omissions |
+| `values.selection_sensitivity.population_weights.records` | 22 municipal counts at 31 December 2024 (total 23,400,220) and normalized weights |
+| `values.pv_model_comparison.cases.horizontal.cities`, `values.pv_model_comparison.cases.south_tilt20.cities` | Municipal annual yields: `simple_yield_kwh_per_kwp` for calibrated output, `benchmark_yield_kwh_per_kwp` for the alternative |
+
+Spearman calculations round inputs to 12 decimal places and use average tied
+ranks; other regression calculations retain full-precision inputs.
+
+The calibrated `src/streetlight/lca/hardware.py` calculation runs without SimaPro.
+A process-level rebuild instead requires SimaPro 10.2.0.3, ecoinvent v3.10,
+IPCC 2021 GWP100 V1.03, and the author's foreground mappings/calibration.
+The private research workspace retains a foreground import CSV, generator and
+manifest under `artifacts/lca/simapro_dual_system/`, and process/exchange mapping
+tables under `artifacts/lca/simapro_index/`. These foreground materials and the
+private `LCA_REBUILD_WITH_LICENSED_DATABASES.md` are absent from public v1.0.0;
+they are not paths readers can execute in this checkout. Calibrated coefficients
+do not replace them, and no foreground-delivery route or fresh licensed
+process-level rerun is established by the public reproduction routes.
 
 ## Validation boundary
 
